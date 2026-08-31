@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>배드민턴 전광판 - TTS 에디션</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body { 
+            background-color: #0a0a0a; 
+            color: #ffffff; 
+            font-family: 'Pretendard', 'Arial', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        /* 상단 컨트롤 패널 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #1a1a1a;
+            border-bottom: 2px solid #333;
+        }
+        .controls { display: flex; gap: 15px; }
+        button {
+            background-color: #444;
+            color: #fff;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:active { transform: scale(0.95); }
+        .btn-start { background-color: #00e676; color: #000; }
+        .btn-undo { background-color: #ff5252; color: #fff; }
+        .btn-serve { background-color: #29b6f6; color: #000; }
+        
+        .status-text { color: #aaa; font-size: 1rem; }
+
+        /* 점수판 영역 */
+        .scoreboard {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+        
+        .team {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+        .team-left { border-right: 4px solid #333; }
+        .team:active { background-color: rgba(255,255,255,0.05); }
+
+        /* 서브권 및 코트 위치 표시기 */
+        .serve-indicator {
+            position: absolute;
+            top: 40px;
+            font-size: 2vw;
+            font-weight: bold;
+            padding: 10px 30px;
+            border-radius: 50px;
+            background-color: #ff3d00;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .has-serve .serve-indicator { opacity: 1; }
+        .serve-left { left: 50px; }
+        .serve-right { right: 50px; }
+
+        .team-name { font-size: 4vw; color: #888; margin-bottom: 10px; letter-spacing: 2px; }
+        
+        .score {
+            font-size: 45vw;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .team-left .score { color: #00ff00; } /* 형광 녹색 */
+        .team-right .score { color: #ffff00; } /* 쨍한 노란색 */
+
+        .court-position {
+            position: absolute;
+            bottom: 40px;
+            font-size: 3vw;
+            color: #aaa;
+            display: flex;
+            gap: 20px;
+        }
+        .court-box {
+            padding: 10px 40px;
+            border: 2px solid #555;
+            border-radius: 10px;
+            background-color: #222;
+        }
+        .active-court {
+            background-color: #ff3d00;
+            color: #fff;
+            border-color: #ff3d00;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 61, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="status-text" id="statusMsg">시스템 대기 중 (시작을 눌러주세요)</div>
+        <div class="controls">
+            <button class="btn-serve" id="firstServeBtn" onclick="toggleFirstServe()">선공: 우리팀</button>
+            <button class="btn-start" id="startBtn">시스템 시작 (오디오/TTS 허용)</button>
+            <button class="btn-undo" id="undoBtn">직전 취소 (Undo)</button>
+        </div>
+    </div>
+
+    <div class="scoreboard">
+        <!-- 우리팀 (왼쪽) -->
+        <div class="team team-left has-serve" id="areaLeft" onclick="addScore('left')">
+            <div class="serve-indicator serve-left">서브권 🏸</div>
+            <div class="team-name">OUR TEAM</div>
+            <div class="score" id="scoreLeft">0</div>
+            
+            <div class="court-position">
+                <div class="court-box" id="courtLeftOdd">홀수(좌)</div>
+                <div class="court-box active-court" id="courtLeftEven">짝수(우)</div>
+            </div>
+        </div>
+
+        <!-- 상대팀 (오른쪽) -->
+        <div class="team team-right" id="areaRight" onclick="addScore('right')">
+            <div class="serve-indicator serve-right">서브권 🏸</div>
+            <div class="team-name">OPPONENT</div>
+            <div class="score" id="scoreRight">0</div>
+            
+            <div class="court-position">
+                <div class="court-box active-court" id="courtRightEven">짝수(우)</div>
+                <div class="court-box" id="courtRightOdd">홀수(좌)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 무음 오디오 (백그라운드 미디어 제어 유지) -->
+    <audio id="silentAudio" loop>
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" type="audio/wav">
+    </audio>
+
+    <script>
+        let state = {
+            scoreLeft: 0,
+            scoreRight: 0,
+            servingTeam: 'left', // 시작 시 선공 팀
+            isContinuous: false
+        };
+        let historyStack = [];
+        let wakeLock = null;
+        let isSystemStarted = false;
+
+        // 배드민턴 올 포 (동점) 영어 발음 맵핑 (0~30점)
+        const tiePronunciation = [
+            "올 제로", "올 원", "올 투", "올 쓰리", "올 포", "올 파이브", "올 식스", "올 세븐", "올 에잇", "올 나인", "올 텐",
+            "올 일레븐", "올 트웰브", "올 써틴", "올 포틴", "올 피프틴", "올 식스틴", "올 세븐틴", "올 에이틴", "올 나인틴", "올 트웬티",
+            "올 트웬티 원", "올 트웬티 투", "올 트웬티 쓰리", "올 트웬티 포", "올 트웬티 파이브", "올 트웬티 식스", "올 트웬티 세븐", "올 트웬티 에잇", "올 트웬티 나인", "올 써티"
+        ];
+
+        function toggleFirstServe() {
+            if(state.scoreLeft > 0 || state.scoreRight > 0) return; // 게임 시작 후 변경 불가
+            state.servingTeam = state.servingTeam === 'left' ? 'right' : 'left';
+            document.getElementById('firstServeBtn').innerText = state.servingTeam === 'left' ? "선공: 우리팀" : "선공: 상대팀";
+            updateUI();
+        }
+
+        function addScore(team) {
+            if (!isSystemStarted) {
+                alert("먼저 '시스템 시작' 버튼을 눌러 권한을 허용해주세요!");
+                return;
+            }
+            
+            // Undo를 위해 이전 상태 저장
+            historyStack.push(JSON.parse(JSON.stringify(state)));
+
+            if (team === 'left') {
+                state.scoreLeft++;
+                if (state.servingTeam === 'left') {
+                    state.isContinuous = true; // 서브권 유지 상태로 득점 (연속)
+                } else {
+                    state.isContinuous = false; // 서브권 가져옴
+                    state.servingTeam = 'left';
+                }
+            } else {
+                state.scoreRight++;
+                if (state.servingTeam === 'right') {
+                    state.isContinuous = true;
+                } else {
+                    state.isContinuous = false;
+                    state.servingTeam = 'right';
+                }
+            }
+
+            updateUI();
+            speakStatus();
+        }
+
+        function undoScore() {
+            if (historyStack.length > 0) {
+                state = historyStack.pop();
+                updateUI();
+                speakTTS("취소되었습니다");
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('scoreLeft').innerText = state.scoreLeft;
+            document.getElementById('scoreRight').innerText = state.scoreRight;
+
+            document.getElementById('areaLeft').classList.remove('has-serve');
+            document.getElementById('areaRight').classList.remove('has-serve');
+            if (state.servingTeam === 'left') document.getElementById('areaLeft').classList.add('has-serve');
+            else document.getElementById('areaRight').classList.add('has-serve');
+
+            // 코트 위치 UI 업데이트
+            document.getElementById('courtLeftOdd').classList.remove('active-court');
+            document.getElementById('courtLeftEven').classList.remove('active-court');
+            document.getElementById('courtRightOdd').classList.remove('active-court');
+            document.getElementById('courtRightEven').classList.remove('active-court');
+
+            if (state.servingTeam === 'left') {
+                if (state.scoreLeft % 2 === 0) document.getElementById('courtLeftEven').classList.add('active-court');
+                else document.getElementById('courtLeftOdd').classList.add('active-court');
+            } else {
+                if (state.scoreRight % 2 === 0) document.getElementById('courtRightEven').classList.add('active-court');
+                else document.getElementById('courtRightOdd').classList.add('active-court');
+            }
+        }
+
+        function speakStatus() {
+            let text = "";
+            
+            // 1. 점수 조합
+            if (state.scoreLeft === state.scoreRight) {
+                text += tiePronunciation[state.scoreLeft] || `올 ${state.scoreLeft}`;
+            } else {
+                // 직관성을 위해 무조건 "왼쪽(우리) 대 오른쪽(상대)" 순으로 안내
+                text += `${state.scoreLeft} 대 ${state.scoreRight}, `;
+            }
+
+            // 2. 서브 위치
+            let serveScore = state.servingTeam === 'left' ? state.scoreLeft : state.scoreRight;
+            let servePosition = serveScore % 2 === 0 ? "오른쪽" : "왼쪽";
+            text += ` ${servePosition} 서브`;
+
+            // 3. 서브 연속 여부
+            if (state.isContinuous) {
+                text += " 연속";
+            }
+
+            speakTTS(text);
+        }
+
+        function speakTTS(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = 1.15; // 스포츠용 약간 빠른 속도
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            isSystemStarted = true;
+            const audio = document.getElementById('silentAudio');
+            audio.play().catch(e => console.log(e));
+            
+            speakTTS("배드민턴 점수판 시스템이 시작되었습니다.");
+
+            // 미디어 세션 (이어폰 버튼) 맵핑
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({ title: '배드민턴 전광판' });
+                
+                // 이어폰 버튼을 두 번 누르면 다음 곡/이전 곡 신호 발생
+                navigator.mediaSession.setActionHandler('nexttrack', () => { addScore('right'); });
+                navigator.mediaSession.setActionHandler('previoustrack', () => { addScore('left'); });
+                navigator.mediaSession.setActionHandler('pause', () => { 
+                    undoScore(); 
+                    audio.play(); 
+                });
+            }
+
+            try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+
+            document.getElementById('startBtn').innerText = "시스템 작동 중";
+            document.getElementById('statusMsg').innerText = "✅ 백그라운드 이어폰 제어 및 TTS 활성화됨";
+            updateUI();
+        });
+
+        document.getElementById('undoBtn').addEventListener('click', undoScore);
+        updateUI();
+    </script>
+</body>
+</html>
