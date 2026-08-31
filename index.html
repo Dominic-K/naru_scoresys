@@ -307,6 +307,30 @@
 
         document.getElementById('undoBtn').addEventListener('click', undoScore);
         updateUI();
+// ===== 여기서부터 새로 추가한 키보드 입력 매핑 코드 =====
+        window.addEventListener('keydown', (e) => {
+            if (!isSystemStarted) return; 
+
+            switch(e.key) {
+                case 'ArrowLeft': 
+                case 'a':         
+                case 'A':
+                    addScore('left');
+                    break;
+                
+                case 'ArrowRight': 
+                case 'd':          
+                case 'D':
+                    addScore('right');
+                    break;
+                
+                case 'Backspace':  
+                case 'z':          
+                case 'Z':
+                    undoScore();
+                    break;
+            }
+        });
     </script>
 </body>
 </html>
