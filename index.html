@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* 설정 화면 (코트 모양) */
+        /* 설정 화면 */
         #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; }
         .court-title { text-align: center; font-size: 2rem; margin-bottom: 10px; font-weight: bold; }
         .court-layout { flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px; }
@@ -26,7 +26,6 @@
         button { background-color: #333; color: #fff; border: none; padding: 10px 15px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         .btn-change { background-color: #ffa726; color: #000; }
-        .btn-start { background-color: #00e676; color: #000; }
         .btn-undo { background-color: #ff5252; color: #fff; }
         .btn-reset { background-color: #9e9e9e; color: #000; }
 
@@ -38,18 +37,16 @@
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
 
-        /* 미니 코트 UI */
+        /* 미니 코트 */
         .mini-court { display: flex; flex-direction: column; width: 45vmin; height: 25vmin; border: 3px solid #fff; background-color: #2e7d32; pointer-events: none; }
         .mc-box { flex: 1; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #fff; }
         .mc-box:last-child { border-bottom: none; }
         .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 4px solid transparent; transition: 0.3s; }
-        /* 서브권자 동그라미 하이라이트 */
         .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.3); color: #ffeb3b; }
     </style>
 </head>
 <body>
 
-    <!-- 1. 초기 세팅 화면 -->
     <div id="setupScreen">
         <div class="court-title">선수 배치 및 첫 서브권 선택</div>
         <div class="court-layout">
@@ -77,18 +74,15 @@
         <button class="start-game-btn" onclick="initGame()">전광판 모드 시작 (전체화면)</button>
     </div>
 
-    <!-- 2. 메인 전광판 -->
     <div id="mainBoard">
         <div class="header">
             <button class="btn-change" onclick="swapCourt()">코트변경</button>
-            <button class="btn-start" id="startBtn">시스템 작동시작</button>
             <button class="btn-undo" onclick="undoScore()">실행취소</button>
             <button class="btn-reset" onclick="resetGame()">초기화</button>
         </div>
         <div class="scoreboard">
             <div class="team team-left" id="areaLeft" onclick="addScore('left')">
                 <div class="score" id="scoreLeft">0</div>
-                <!-- 왼쪽 팀 미니 코트 -->
                 <div class="mini-court">
                     <div class="mc-box"><span class="mc-name" id="name-left-top"></span></div>
                     <div class="mc-box"><span class="mc-name" id="name-left-bottom"></span></div>
@@ -96,7 +90,6 @@
             </div>
             <div class="team team-right" id="areaRight" onclick="addScore('right')">
                 <div class="score" id="scoreRight">0</div>
-                <!-- 오른쪽 팀 미니 코트 -->
                 <div class="mini-court">
                     <div class="mc-box"><span class="mc-name" id="name-right-top"></span></div>
                     <div class="mc-box"><span class="mc-name" id="name-right-bottom"></span></div>
@@ -113,18 +106,17 @@
             leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' }
         };
         let historyStack = [];
-        let isSystemStarted = false; let audioCtx; let voices = [];
+        let isSystemStarted = false; let audioCtx; let voices = []; let wakeLock = null;
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
-        // 전체화면 강제 실행 함수
         function enterFullScreen() {
             let elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); } 
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(e=>console.log(e)); } 
         }
 
-        function initGame() {
-            enterFullScreen(); // 시작 버튼 누를 때 전체화면 진입
+        async function initGame() {
+            enterFullScreen(); 
 
             state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 위";
             state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 아래";
@@ -140,7 +132,43 @@
             
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('mainBoard').style.display = 'flex';
+            
+            isSystemStarted = true;
             updateUI();
+
+            // 백그라운드 오디오 세션 및 WakeLock 강제 활성화 (사용자 제스처 통과)
+            try {
+                const audio = document.getElementById('silentAudio'); 
+                audio.play().catch(e=>console.log(e));
+                
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator(); 
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0.0001; 
+                osc.connect(gain); 
+                gain.connect(audioCtx.destination); 
+                osc.start();
+
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({ title: '배드민턴 전광판 Pro' });
+                    navigator.mediaSession.playbackState = "playing";
+                    navigator.mediaSession.setActionHandler('nexttrack', () => { addScore('right'); });
+                    navigator.mediaSession.setActionHandler('previoustrack', () => { addScore('left'); });
+                    navigator.mediaSession.setActionHandler('pause', () => { undoScore(); });
+                    navigator.mediaSession.setActionHandler('play', () => { audio.play(); });
+                }
+                
+                if (navigator.wakeLock) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+                
+                speakTTS("시작");
+            } catch (err) { 
+                console.log(err); 
+            }
         }
 
         function resetGame() {
@@ -150,9 +178,6 @@
                 state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
                 historyStack = [];
                 isSystemStarted = false;
-                
-                const btn = document.getElementById('startBtn');
-                btn.style.backgroundColor = "#00e676"; btn.style.color = "#000"; btn.innerText = "시스템 작동시작";
                 
                 document.getElementById('mainBoard').style.display = 'none';
                 document.getElementById('setupScreen').style.display = 'flex';
@@ -172,7 +197,7 @@
         }
 
         function addScore(team) {
-            if (!isSystemStarted) { alert("상단의 '시스템 작동시작' 버튼을 먼저 눌러주세요!"); return; }
+            if (!isSystemStarted) return;
             historyStack.push(JSON.parse(JSON.stringify(state)));
 
             let scoringTeamData = team === 'left' ? state.leftTeam : state.rightTeam;
@@ -219,16 +244,13 @@
             if (state.servingTeam === 'left') document.getElementById('areaLeft').classList.add('has-serve');
             else document.getElementById('areaRight').classList.add('has-serve');
 
-            // 미니 코트 이름 업데이트
             document.getElementById('name-left-top').innerText = state.leftTeam.left;
             document.getElementById('name-left-bottom').innerText = state.leftTeam.right;
             document.getElementById('name-right-top').innerText = state.rightTeam.right;
             document.getElementById('name-right-bottom').innerText = state.rightTeam.left;
 
-            // 서브권자 동그라미 초기화
             document.querySelectorAll('.mc-name').forEach(el => el.classList.remove('is-server'));
 
-            // 현재 서브권자 동그라미 표시
             if (state.servingTeam === 'left') {
                 if (state.currentServerSide === 'left') document.getElementById('name-left-top').classList.add('is-server');
                 else document.getElementById('name-left-bottom').classList.add('is-server');
@@ -261,36 +283,23 @@
             }
         }
 
-        document.getElementById('startBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('startBtn');
-            btn.style.backgroundColor = "#555"; btn.style.color = "#fff"; btn.innerText = "작동중";
-            isSystemStarted = true;
-            try {
-                const audio = document.getElementById('silentAudio'); audio.play().catch(e=>console.log(e));
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!audioCtx) audioCtx = new AudioContext();
-                if (audioCtx.state === 'suspended') await audioCtx.resume();
-                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-                gain.gain.value = 0.0001; osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
-
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({ title: '배드민턴 전광판 Pro' });
-                    navigator.mediaSession.playbackState = "playing";
-                    navigator.mediaSession.setActionHandler('nexttrack', () => { addScore('right'); });
-                    navigator.mediaSession.setActionHandler('previoustrack', () => { addScore('left'); });
-                    navigator.mediaSession.setActionHandler('pause', () => { undoScore(); });
-                    navigator.mediaSession.setActionHandler('play', () => { audio.play(); });
-                }
-                speakTTS("시작");
-            } catch (err) { console.log(err); }
-        });
-
         window.addEventListener('keydown', (e) => {
             if (!isSystemStarted) return; 
             switch(e.key) {
                 case 'ArrowLeft': case 'a': addScore('left'); break;
                 case 'ArrowRight': case 'd': addScore('right'); break;
                 case 'Backspace': case 'z': undoScore(); break;
+            }
+        });
+        
+        // 화면 꺼짐(백그라운드 전환) 딜레이/먹통 해결 방어 로직
+        document.addEventListener("visibilitychange", async () => {
+            if (document.visibilityState === "visible") {
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+                try {
+                    if (isSystemStarted && navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) { console.log(err); }
             }
         });
     </script>
