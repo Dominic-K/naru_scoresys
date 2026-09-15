@@ -9,35 +9,26 @@
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         /* 설정 화면 (코트 모양) */
-        #setupScreen {
-            display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px;
-        }
+        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; }
         .court-title { text-align: center; font-size: 2rem; margin-bottom: 10px; font-weight: bold; }
-        .court-layout {
-            flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px;
-        }
+        .court-layout { flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px; }
         .court-half { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #fff; }
         .court-half:last-child { border-right: none; }
-        .court-box {
-            flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px;
-        }
+        .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
         .court-box:last-child { border-bottom: none; }
-        input[type="text"] {
-            width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 10px;
-        }
+        input[type="text"] { width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 10px; }
         .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        .start-game-btn {
-            background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
-        }
+        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
-        /* 기존 전광판 화면 */
+        /* 전광판 화면 */
         #mainBoard { display: none; flex-direction: column; height: 100%; }
-        .header { display: flex; justify-content: center; align-items: center; padding: 10px; background-color: #111; border-bottom: 2px solid #222; gap: 10px; z-index: 10; }
-        button { background-color: #333; color: #fff; border: none; padding: 12px 20px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .header { display: flex; justify-content: center; align-items: center; padding: 10px; background-color: #111; border-bottom: 2px solid #222; gap: 10px; z-index: 10; flex-wrap: wrap; }
+        button { background-color: #333; color: #fff; border: none; padding: 10px 15px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         .btn-change { background-color: #ffa726; color: #000; }
         .btn-start { background-color: #00e676; color: #000; }
         .btn-undo { background-color: #ff5252; color: #fff; }
+        .btn-reset { background-color: #9e9e9e; color: #000; }
 
         .scoreboard { display: flex; flex: 1; width: 100%; }
         .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; }
@@ -51,29 +42,29 @@
 </head>
 <body>
 
-    <!-- 1. 초기 선수 세팅 화면 (코트 모양) -->
+    <!-- 1. 초기 선수 세팅 화면 (시선 방향 코트 반영) -->
     <div id="setupScreen">
         <div class="court-title">선수 배치 및 첫 서브권 선택</div>
         <div class="court-layout">
-            <!-- 왼쪽 팀 (위가 우측 코트, 아래가 좌측 코트) -->
+            <!-- 왼쪽 팀 (오른쪽을 바라봄: 위가 좌측, 아래가 우측) -->
             <div class="court-half">
                 <div class="court-box">
-                    <input type="text" id="leftRightPlayer" placeholder="왼쪽팀 우측 선수">
-                    <label class="radio-label"><input type="radio" name="firstServe" value="left-right" checked> 첫 서브</label>
-                </div>
-                <div class="court-box">
-                    <input type="text" id="leftLeftPlayer" placeholder="왼쪽팀 좌측 선수">
+                    <input type="text" id="leftLeftPlayer" placeholder="왼쪽팀 좌측(위)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="left-left"> 첫 서브</label>
                 </div>
+                <div class="court-box">
+                    <input type="text" id="leftRightPlayer" placeholder="왼쪽팀 우측(아래)">
+                    <label class="radio-label"><input type="radio" name="firstServe" value="left-right" checked> 첫 서브</label>
+                </div>
             </div>
-            <!-- 오른쪽 팀 -->
+            <!-- 오른쪽 팀 (왼쪽을 바라봄: 위가 우측, 아래가 좌측) -->
             <div class="court-half">
                 <div class="court-box">
-                    <input type="text" id="rightRightPlayer" placeholder="오른쪽팀 우측 선수">
+                    <input type="text" id="rightRightPlayer" placeholder="오른쪽팀 우측(위)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="right-right"> 첫 서브</label>
                 </div>
                 <div class="court-box">
-                    <input type="text" id="rightLeftPlayer" placeholder="오른쪽팀 좌측 선수">
+                    <input type="text" id="rightLeftPlayer" placeholder="오른쪽팀 좌측(아래)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="right-left"> 첫 서브</label>
                 </div>
             </div>
@@ -87,6 +78,7 @@
             <button class="btn-change" onclick="swapCourt()">코트변경</button>
             <button class="btn-start" id="startBtn">시스템 작동시작</button>
             <button class="btn-undo" onclick="undoScore()">실행취소</button>
+            <button class="btn-reset" onclick="resetGame()">초기화</button>
         </div>
         <div class="scoreboard">
             <div class="team team-left" id="areaLeft" onclick="addScore('left')">
@@ -112,10 +104,11 @@
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
         function initGame() {
-            state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 1";
-            state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 2";
-            state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 1";
-            state.rightTeam.left = document.getElementById('rightLeftPlayer').value || "오른쪽 2";
+            // 시선 방향에 맞춘 데이터 매핑
+            state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 위";
+            state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 아래";
+            state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 위";
+            state.rightTeam.left = document.getElementById('rightLeftPlayer').value || "오른쪽 아래";
 
             const firstServe = document.querySelector('input[name="firstServe"]:checked').value;
             const [team, position] = firstServe.split('-');
@@ -126,6 +119,21 @@
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('mainBoard').style.display = 'flex';
             updateUI();
+        }
+
+        function resetGame() {
+            if(confirm("진짜 처음으로 돌아가시겠습니까?\n현재 점수와 선수 배치가 모두 초기화됩니다.")) {
+                state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
+                historyStack = [];
+                isSystemStarted = false;
+                
+                const btn = document.getElementById('startBtn');
+                btn.style.backgroundColor = "#00e676"; btn.style.color = "#000"; btn.innerText = "시스템 작동시작";
+                
+                document.getElementById('mainBoard').style.display = 'none';
+                document.getElementById('setupScreen').style.display = 'flex';
+                speakTTS("초기화");
+            }
         }
 
         function swapCourt() {
@@ -149,7 +157,7 @@
                 state.scoreLeft++;
                 if (state.servingTeam === 'left') {
                     state.isContinuous = true;
-                    // 득점 & 서브권 유지 시 자리 스와이프
+                    // 서브권 유지 득점 시 좌우 자리 교대 (배드민턴 룰)
                     let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp;
                 } else {
                     state.isContinuous = false; state.servingTeam = 'left';
@@ -164,7 +172,7 @@
                 }
             }
 
-            // 룰에 따른 서브권자 재계산 (점수가 짝수면 우측, 홀수면 좌측)
+            // 득점 후 해당 팀의 짝수/홀수 점수에 따라 서브자 결정
             let serveScore = state.servingTeam === 'left' ? state.scoreLeft : state.scoreRight;
             let currentServeTeamData = state.servingTeam === 'left' ? state.leftTeam : state.rightTeam;
             state.currentServerName = serveScore % 2 === 0 ? currentServeTeamData.right : currentServeTeamData.left;
@@ -201,7 +209,6 @@
             let serveScore = state.servingTeam === 'left' ? state.scoreLeft : state.scoreRight;
             let receiveScore = state.servingTeam === 'left' ? state.scoreRight : state.scoreLeft;
             
-            // TTS 쉼표(,)를 이용한 템포 조절 및 이름 안내
             let text = `${serveScore} 대 ${receiveScore}`;
             if (state.isContinuous) {
                 text += `, ${state.currentServerName} 연속`;
