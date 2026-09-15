@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* 설정 화면 */
+        /* 1. 설정 화면 */
         #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; overflow-y: auto; }
         .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
         .court-title { font-size: 1.5rem; font-weight: bold; }
@@ -23,7 +23,7 @@
         .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 5px; cursor: pointer; }
         .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; flex-shrink: 0; margin-bottom: 20px; }
         
-        /* 전광판 화면 컨테이너 */
+        /* 2. 전광판 화면 컨테이너 (스크롤 허용) */
         #mainBoard { display: none; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
         
         .scoreboard { display: flex; width: 100%; min-height: 100vh; min-height: 100dvh; flex-shrink: 0; position: relative; }
@@ -34,12 +34,12 @@
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
 
-        /* 🏸 리얼 배드민턴 코트 디테일 */
+        /* 3. 리얼 배드민턴 코트 디테일 */
         .combined-court {
             position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
             display: flex; width: 90vmin; height: 26vmin; border: 3px solid #fff; 
             background-color: #2e7d32; pointer-events: none; z-index: 10;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.7); overflow: hidden; /* 화살표 안 빠져나가게 */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.7); overflow: hidden;
         }
         .court-lines-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         .inner-bounds { position: absolute; top: 12%; bottom: 12%; left: 7%; right: 7%; border: 2px solid rgba(255,255,255,0.4); }
@@ -52,43 +52,15 @@
             border-left: 2px solid #fff; border-right: 2px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.6); z-index: 5;
         }
 
-        /* 🚀 서브 화살표 애니메이션 레이어 */
-        .serve-arrow-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 8;
-        }
-        .shuttle-arrow {
-            position: absolute; width: 4vmin; height: 4vmin; font-size: 4vmin;
-            color: yellow; text-shadow: 0 0 10px yellow;
-            opacity: 0;
-        }
-
-        /* 4가지 서브 방향 애니메이션 (대각선 비행) */
-        /* 1. 왼쪽 위(상단) -> 오른쪽 아래(하단) */
-        @keyframes fly-left-top-to-right-bottom {
-            0% { top: 20%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(30deg); }
-            80% { top: 80%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(30deg); }
-            100% { top: 80%; left: 80%; opacity: 0; transform: translate(-50%, -50%) rotate(30deg); }
-        }
-        /* 2. 왼쪽 아래(하단) -> 오른쪽 위(상단) */
-        @keyframes fly-left-bottom-to-right-top {
-            0% { top: 80%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(-30deg); }
-            80% { top: 20%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(-30deg); }
-            100% { top: 20%; left: 80%; opacity: 0; transform: translate(-50%, -50%) rotate(-30deg); }
-        }
-        /* 3. 오른쪽 위(상단) -> 왼쪽 아래(하단) */
-        @keyframes fly-right-top-to-left-bottom {
-            0% { top: 20%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(150deg); }
-            80% { top: 80%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(150deg); }
-            100% { top: 80%; left: 20%; opacity: 0; transform: translate(-50%, -50%) rotate(150deg); }
-        }
-        /* 4. 오른쪽 아래(하단) -> 왼쪽 위(상단) */
-        @keyframes fly-right-bottom-to-left-top {
-            0% { top: 80%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(-150deg); }
-            80% { top: 20%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(-150deg); }
-            100% { top: 20%; left: 20%; opacity: 0; transform: translate(-50%, -50%) rotate(-150deg); }
-        }
-
-        /* 화살표에 적용할 클래스들 */
+        /* 4. 서브 화살표 애니메이션 레이어 */
+        .serve-arrow-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 8; }
+        .shuttle-arrow { position: absolute; width: 4vmin; height: 4vmin; font-size: 4vmin; color: yellow; text-shadow: 0 0 10px yellow; opacity: 0; }
+        
+        @keyframes fly-left-top-to-right-bottom { 0% { top: 20%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(30deg); } 80% { top: 80%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(30deg); } 100% { top: 80%; left: 80%; opacity: 0; transform: translate(-50%, -50%) rotate(30deg); } }
+        @keyframes fly-left-bottom-to-right-top { 0% { top: 80%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(-30deg); } 80% { top: 20%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(-30deg); } 100% { top: 20%; left: 80%; opacity: 0; transform: translate(-50%, -50%) rotate(-30deg); } }
+        @keyframes fly-right-top-to-left-bottom { 0% { top: 20%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(150deg); } 80% { top: 80%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(150deg); } 100% { top: 80%; left: 20%; opacity: 0; transform: translate(-50%, -50%) rotate(150deg); } }
+        @keyframes fly-right-bottom-to-left-top { 0% { top: 80%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(-150deg); } 80% { top: 20%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(-150deg); } 100% { top: 20%; left: 20%; opacity: 0; transform: translate(-50%, -50%) rotate(-150deg); } }
+        
         .anim-lt-rb { animation: fly-left-top-to-right-bottom 1.5s infinite; }
         .anim-lb-rt { animation: fly-left-bottom-to-right-top 1.5s infinite; }
         .anim-rt-lb { animation: fly-right-top-to-left-bottom 1.5s infinite; }
@@ -97,17 +69,10 @@
         /* 선수 토큰(UI) 레이어 */
         .court-half-ui { flex: 1; display: flex; flex-direction: column; z-index: 10; }
         .mc-box-ui { flex: 1; display: flex; justify-content: center; align-items: center; }
-        .mc-name { 
-            font-size: 3.5vmin; font-weight: bold; color: #fff; padding: 6px 16px; 
-            border-radius: 30px; border: 3px solid transparent; transition: 0.3s;
-            background-color: rgba(0, 0, 0, 0.4); text-shadow: 1px 1px 2px #000;
-        }
-        .mc-name.is-server { 
-            border-color: #ffca28; background-color: rgba(255, 202, 40, 0.9); 
-            color: #000; text-shadow: none; box-shadow: 0 0 10px rgba(255, 202, 40, 0.6);
-        }
+        .mc-name { font-size: 3.5vmin; font-weight: bold; color: #fff; padding: 6px 16px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; background-color: rgba(0, 0, 0, 0.4); text-shadow: 1px 1px 2px #000; }
+        .mc-name.is-server { border-color: #ffca28; background-color: rgba(255, 202, 40, 0.9); color: #000; text-shadow: none; box-shadow: 0 0 10px rgba(255, 202, 40, 0.6); }
 
-        /* 하단 스크롤 메뉴 */
+        /* 5. 하단 스크롤 메뉴 (그리드) */
         #scrollMenu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px 15px 80px 15px; background-color: #111; border-top: 2px solid #333; flex-shrink: 0; }
         #scrollMenu button { padding: 22px 0; font-size: 1.2rem; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; color: #fff; }
         .btn-change { background-color: #ffa726; color: #000 !important; }
@@ -166,7 +131,6 @@
                     <div class="court-net"></div>
                 </div>
 
-                <!-- 🚀 동적 화살표 애니메이션 레이어 -->
                 <div class="serve-arrow-layer">
                     <div id="shuttleArrow" class="shuttle-arrow">➤</div>
                 </div>
@@ -261,7 +225,7 @@
 
         function addScore(team) {
             if (!isSystemStarted) return;
-            if(document.getElementById('mainBoard').scrollTop > 10) { document.getElementById('mainBoard').scrollTo(0, 0); }
+            if(document.getElementById('mainBoard').scrollTop > 10) { document.getElementById('mainBoard').scrollTo(0, 0); return; }
 
             historyStack.push(JSON.parse(JSON.stringify(state)));
             let scoringTeamData = team === 'left' ? state.leftTeam : state.rightTeam;
@@ -307,25 +271,24 @@
 
             document.querySelectorAll('.mc-name').forEach(el => el.classList.remove('is-server'));
             
-            // 화살표 애니메이션 처리
             const arrow = document.getElementById('shuttleArrow');
-            arrow.className = 'shuttle-arrow'; // 기존 클래스 초기화
+            arrow.className = 'shuttle-arrow'; 
 
             if (state.servingTeam === 'left') {
                 if (state.currentServerSide === 'left') {
                     document.getElementById('name-left-top').classList.add('is-server');
-                    arrow.classList.add('anim-lt-rb'); // 좌상 -> 우하
+                    arrow.classList.add('anim-lt-rb'); 
                 } else {
                     document.getElementById('name-left-bottom').classList.add('is-server');
-                    arrow.classList.add('anim-lb-rt'); // 좌하 -> 우상
+                    arrow.classList.add('anim-lb-rt'); 
                 }
             } else {
                 if (state.currentServerSide === 'right') {
                     document.getElementById('name-right-top').classList.add('is-server');
-                    arrow.classList.add('anim-rt-lb'); // 우상 -> 좌하
+                    arrow.classList.add('anim-rt-lb'); 
                 } else {
                     document.getElementById('name-right-bottom').classList.add('is-server');
-                    arrow.classList.add('anim-rb-lt'); // 우하 -> 좌상
+                    arrow.classList.add('anim-rb-lt'); 
                 }
             }
         }
@@ -349,6 +312,29 @@
                 if (koreanVoices.length > 0) utterance.voice = koreanVoices[0];
                 window.speechSynthesis.speak(utterance);
             }
+        }
+
+        // ⌚ 갤럭시 워치 회전 베젤 (마우스 휠) 득점 조작 로직
+        let bezelCooldown = false; 
+        window.addEventListener('wheel', (e) => {
+            if (!isSystemStarted || bezelCooldown) return;
+            if(document.getElementById('mainBoard').scrollTop > 10) return;
+
+            if (e.deltaY > 10) {
+                addScore('right');
+                if (navigator.vibrate) navigator.vibrate(50); 
+                lockBezel();
+            } 
+            else if (e.deltaY < -10) {
+                addScore('left');
+                if (navigator.vibrate) navigator.vibrate(50); 
+                lockBezel();
+            }
+        });
+
+        function lockBezel() {
+            bezelCooldown = true;
+            setTimeout(() => { bezelCooldown = false; }, 600);
         }
 
         document.addEventListener("visibilitychange", async () => {
