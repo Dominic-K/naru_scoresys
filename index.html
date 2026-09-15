@@ -8,10 +8,9 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* 설정 화면 (폴드 가로 모드 대응 스크롤 허용) */
+        /* 설정 화면 */
         #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; overflow-y: auto; }
         
-        /* 상단 헤더 (제목 + 전체화면 버튼) */
         .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
         .court-title { font-size: 1.5rem; font-weight: bold; }
         .btn-fullscreen-toggle { background-color: #111; color: #fff; border: 2px solid #fff; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
@@ -29,32 +28,49 @@
         /* 전광판 화면 컨테이너 */
         #mainBoard { display: none; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
         
-        .scoreboard { display: flex; width: 100%; min-height: 100vh; min-height: 100dvh; flex-shrink: 0; }
-        .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; position: relative; }
+        .scoreboard { display: flex; width: 100%; min-height: 100vh; min-height: 100dvh; flex-shrink: 0; position: relative; }
+        .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; }
         .team.has-serve { background-color: #1a365d; }
         .team:active { opacity: 0.7; }
-        .score { font-size: 35vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 20px; }
+        .score { font-size: 35vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 10vmin; }
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
 
-        .mini-court { display: flex; flex-direction: column; width: 45vmin; height: 25vmin; border: 2px solid #fff; background-color: #2e7d32; pointer-events: none; }
-        .mc-box { flex: 1; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #fff; }
-        .mc-box:last-child { border-bottom: none; }
-        .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; }
-        .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.3); color: #ffeb3b; }
+        /* 💡 새롭게 바뀐 중앙 통합 미니 코트 */
+        .combined-court {
+            position: absolute;
+            bottom: 8%; /* 화면 아래쪽에 띄움 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            width: 85vmin; /* 화면에 꽉 차게 */
+            height: 22vmin;
+            border: 4px solid #fff;
+            background-color: #2e7d32;
+            pointer-events: none; /* 핵심! 터치가 통과해서 뒤에 있는 점수판이 눌림 */
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.7); /* 살짝 떠 있는 입체감 */
+        }
+        .court-half-ui { flex: 1; display: flex; flex-direction: column; border-right: 4px solid #fff; }
+        .court-half-ui:last-child { border-right: none; }
+        .mc-box-ui { flex: 1; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid rgba(255,255,255,0.4); }
+        .mc-box-ui:last-child { border-bottom: none; }
+        .mc-name { font-size: 3.5vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; }
+        .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.4); color: #ffeb3b; text-shadow: 0 0 5px #000; }
 
-        /* 하단 스크롤 메뉴 */
+        /* 하단 스크롤 메뉴 (버튼 크기를 키운 2x2 그리드 배열) */
         #scrollMenu { 
-            display: flex; justify-content: center; align-items: flex-start; gap: 10px; 
-            padding: 20px 10px 80px 10px; 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; 
+            padding: 20px 15px 80px 15px; 
             background-color: #111; border-top: 2px solid #333; 
             flex-shrink: 0; 
         }
         #scrollMenu button { 
-            flex: 1; padding: 18px 0; font-size: 1.2rem; 
+            padding: 22px 0; font-size: 1.2rem; 
             border-radius: 12px; cursor: pointer; font-weight: bold; border: none; color: #fff; 
         }
         .btn-change { background-color: #ffa726; color: #000 !important; }
+        .btn-fullscreen-menu { background-color: #4CAF50; }
         .btn-undo { background-color: #ff5252; }
         .btn-reset { background-color: #9e9e9e; color: #000 !important; }
     </style>
@@ -63,7 +79,6 @@
 
     <!-- 설정 화면 -->
     <div id="setupScreen">
-        <!-- 상단 헤더: 전체화면 수동 진입 버튼 -->
         <div class="setup-header">
             <div class="court-title">선수 배치</div>
             <button class="btn-fullscreen-toggle" onclick="enterFullScreen()">⛶ 전체화면 켜기</button>
@@ -97,24 +112,30 @@
     <!-- 전광판 스크롤 컨테이너 -->
     <div id="mainBoard">
         <div class="scoreboard">
+            <!-- 터치 영역 (점수판 전체) -->
             <div class="team team-left" id="areaLeft" onclick="addScore('left')">
                 <div class="score" id="scoreLeft">0</div>
-                <div class="mini-court">
-                    <div class="mc-box"><span class="mc-name" id="name-left-top"></span></div>
-                    <div class="mc-box"><span class="mc-name" id="name-left-bottom"></span></div>
-                </div>
             </div>
             <div class="team team-right" id="areaRight" onclick="addScore('right')">
                 <div class="score" id="scoreRight">0</div>
-                <div class="mini-court">
-                    <div class="mc-box"><span class="mc-name" id="name-right-top"></span></div>
-                    <div class="mc-box"><span class="mc-name" id="name-right-bottom"></span></div>
+            </div>
+
+            <!-- 중앙 통합 미니 코트 (터치 간섭 없음) -->
+            <div class="combined-court">
+                <div class="court-half-ui">
+                    <div class="mc-box-ui"><span class="mc-name" id="name-left-top"></span></div>
+                    <div class="mc-box-ui"><span class="mc-name" id="name-left-bottom"></span></div>
+                </div>
+                <div class="court-half-ui">
+                    <div class="mc-box-ui"><span class="mc-name" id="name-right-top"></span></div>
+                    <div class="mc-box-ui"><span class="mc-name" id="name-right-bottom"></span></div>
                 </div>
             </div>
         </div>
 
         <div id="scrollMenu">
             <button class="btn-change" onclick="swapCourt()">코트 변경</button>
+            <button class="btn-fullscreen-menu" onclick="enterFullScreen()">⛶ 전체화면 복구</button>
             <button class="btn-undo" onclick="undoScore()">실행 취소</button>
             <button class="btn-reset" onclick="resetGame()">전체 초기화</button>
         </div>
@@ -128,16 +149,20 @@
 
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
-        // 전체화면 요청 함수 (언제든 호출 가능)
         function enterFullScreen() {
             let elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); } 
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(e=>console.log(e)); } 
+            
+            // 메뉴에서 전체화면을 켰을 때 다시 위로 스크롤 올려줌
+            if(isSystemStarted) {
+                document.getElementById('mainBoard').scrollTo(0, 0);
+            }
         }
 
         async function initGame() {
             document.activeElement.blur();
-            enterFullScreen(); // 게임 시작 시에도 다시 한번 전체화면 보장
+            enterFullScreen(); 
 
             state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 1";
             state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 2";
