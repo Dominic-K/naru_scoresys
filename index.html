@@ -6,43 +6,52 @@
     <title>배드민턴 전광판 Pro</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        /* 설정 화면 */
-        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; }
-        .court-title { text-align: center; font-size: 2rem; margin-bottom: 10px; font-weight: bold; }
-        .court-layout { flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px; }
+        /* 설정 화면 (세로 화면에 맞게 다이어트) */
+        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 15px; }
+        .court-title { text-align: center; font-size: 1.5rem; margin-bottom: 10px; font-weight: bold; }
+        .court-layout { flex: 1; display: flex; border: 3px solid #fff; position: relative; margin-bottom: 15px; }
         .court-half { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #fff; }
         .court-half:last-child { border-right: none; }
-        .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
+        .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 5px; }
         .court-box:last-child { border-bottom: none; }
-        input[type="text"] { width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 10px; color: #000; }
-        .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        input[type="text"] { width: 90%; padding: 8px; font-size: 1rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 5px; color: #000; }
+        .radio-label { font-size: 0.9rem; background: rgba(0,0,0,0.5); padding: 5px 8px; border-radius: 5px; cursor: pointer; }
+        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.2rem; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
         /* 전광판 화면 */
-        #mainBoard { display: none; flex-direction: column; height: 100%; }
-        .header { display: flex; justify-content: center; align-items: center; padding: 10px; background-color: #111; border-bottom: 2px solid #222; gap: 10px; z-index: 10; flex-wrap: wrap; }
-        button { background-color: #333; color: #fff; border: none; padding: 10px 15px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-change { background-color: #ffa726; color: #000; }
-        .btn-undo { background-color: #ff5252; color: #fff; }
-        .btn-reset { background-color: #9e9e9e; color: #000; }
-
+        #mainBoard { display: none; flex-direction: column; height: 100%; position: relative; }
         .scoreboard { display: flex; flex: 1; width: 100%; }
         .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; position: relative; }
         .team.has-serve { background-color: #1a365d; }
         .team:active { opacity: 0.7; }
-        .score { font-size: 30vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 20px; }
+        .score { font-size: 35vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 20px; }
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
 
         /* 미니 코트 */
-        .mini-court { display: flex; flex-direction: column; width: 45vmin; height: 25vmin; border: 3px solid #fff; background-color: #2e7d32; pointer-events: none; }
+        .mini-court { display: flex; flex-direction: column; width: 45vmin; height: 25vmin; border: 2px solid #fff; background-color: #2e7d32; pointer-events: none; }
         .mc-box { flex: 1; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #fff; }
         .mc-box:last-child { border-bottom: none; }
-        .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 4px solid transparent; transition: 0.3s; }
+        .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; }
         .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.3); color: #ffeb3b; }
+
+        /* 히든 메뉴 바 (하단에서 스르륵 올라옴) */
+        #hiddenMenu { 
+            position: absolute; bottom: -100px; left: 0; width: 100%; 
+            display: flex; justify-content: center; align-items: center; gap: 15px; 
+            padding: 15px; background-color: rgba(17, 17, 17, 0.9); border-top: 2px solid #333; 
+            transition: bottom 0.3s ease-in-out; z-index: 20; 
+        }
+        #hiddenMenu.show { bottom: 0; }
+        #hiddenMenu button { 
+            flex: 1; max-width: 120px; padding: 12px; font-size: 1rem; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; border: none; color: #fff; 
+        }
+        .btn-change { background-color: #ffa726; color: #000 !important; }
+        .btn-undo { background-color: #ff5252; }
+        .btn-reset { background-color: #9e9e9e; color: #000 !important; }
     </style>
 </head>
 <body>
@@ -52,21 +61,21 @@
         <div class="court-layout">
             <div class="court-half">
                 <div class="court-box">
-                    <input type="text" id="leftLeftPlayer" placeholder="왼쪽팀 좌측(위)">
+                    <input type="text" id="leftLeftPlayer" placeholder="왼팀 좌측(위)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="left-left"> 첫 서브</label>
                 </div>
                 <div class="court-box">
-                    <input type="text" id="leftRightPlayer" placeholder="왼쪽팀 우측(아래)">
+                    <input type="text" id="leftRightPlayer" placeholder="왼팀 우측(아래)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="left-right" checked> 첫 서브</label>
                 </div>
             </div>
             <div class="court-half">
                 <div class="court-box">
-                    <input type="text" id="rightRightPlayer" placeholder="오른쪽팀 우측(위)">
+                    <input type="text" id="rightRightPlayer" placeholder="오른팀 우측(위)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="right-right"> 첫 서브</label>
                 </div>
                 <div class="court-box">
-                    <input type="text" id="rightLeftPlayer" placeholder="오른쪽팀 좌측(아래)">
+                    <input type="text" id="rightLeftPlayer" placeholder="오른팀 좌측(아래)">
                     <label class="radio-label"><input type="radio" name="firstServe" value="right-left"> 첫 서브</label>
                 </div>
             </div>
@@ -75,20 +84,16 @@
     </div>
 
     <div id="mainBoard">
-        <div class="header">
-            <button class="btn-change" onclick="swapCourt()">코트변경</button>
-            <button class="btn-undo" onclick="undoScore()">실행취소</button>
-            <button class="btn-reset" onclick="resetGame()">초기화</button>
-        </div>
+        <!-- 터치/롱프레스 이벤트를 받는 실제 점수판 영역 -->
         <div class="scoreboard">
-            <div class="team team-left" id="areaLeft" onclick="addScore('left')">
+            <div class="team team-left" id="areaLeft">
                 <div class="score" id="scoreLeft">0</div>
                 <div class="mini-court">
                     <div class="mc-box"><span class="mc-name" id="name-left-top"></span></div>
                     <div class="mc-box"><span class="mc-name" id="name-left-bottom"></span></div>
                 </div>
             </div>
-            <div class="team team-right" id="areaRight" onclick="addScore('right')">
+            <div class="team team-right" id="areaRight">
                 <div class="score" id="scoreRight">0</div>
                 <div class="mini-court">
                     <div class="mc-box"><span class="mc-name" id="name-right-top"></span></div>
@@ -96,17 +101,22 @@
                 </div>
             </div>
         </div>
+
+        <!-- 3초 꾹 누르면 올라오는 히든 메뉴 -->
+        <div id="hiddenMenu">
+            <button class="btn-change" onclick="swapCourt(); toggleMenu(false);">코트변경</button>
+            <button class="btn-undo" onclick="undoScore(); toggleMenu(false);">실행취소</button>
+            <button class="btn-reset" onclick="resetGame(); toggleMenu(false);">초기화</button>
+        </div>
     </div>
 
     <audio id="silentAudio" loop playsinline><source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" type="audio/wav"></audio>
 
     <script>
-        let state = { 
-            scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '',
-            leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' }
-        };
-        let historyStack = [];
-        let isSystemStarted = false; let audioCtx; let voices = []; let wakeLock = null;
+        let state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
+        let historyStack = []; let isSystemStarted = false; let audioCtx; let voices = []; let wakeLock = null;
+        let pressTimer; // 롱프레스 타이머
+
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
         function enterFullScreen() {
@@ -126,31 +136,21 @@
             const firstServe = document.querySelector('input[name="firstServe"]:checked').value;
             const [team, position] = firstServe.split('-');
             
-            state.servingTeam = team;
-            state.currentServerSide = position;
-            state.currentServerName = state[team + "Team"][position];
+            state.servingTeam = team; state.currentServerSide = position; state.currentServerName = state[team + "Team"][position];
             
             document.getElementById('setupScreen').style.display = 'none';
             document.getElementById('mainBoard').style.display = 'flex';
             
             isSystemStarted = true;
-            updateUI();
+            updateUI(); setupTouchEvents();
 
-            // 백그라운드 오디오 세션 및 WakeLock 강제 활성화 (사용자 제스처 통과)
             try {
-                const audio = document.getElementById('silentAudio'); 
-                audio.play().catch(e=>console.log(e));
-                
+                const audio = document.getElementById('silentAudio'); audio.play().catch(e=>console.log(e));
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!audioCtx) audioCtx = new AudioContext();
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
-                
-                const osc = audioCtx.createOscillator(); 
-                const gain = audioCtx.createGain();
-                gain.gain.value = 0.0001; 
-                osc.connect(gain); 
-                gain.connect(audioCtx.destination); 
-                osc.start();
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                gain.gain.value = 0.0001; osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
 
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({ title: '배드민턴 전광판 Pro' });
@@ -161,24 +161,16 @@
                     navigator.mediaSession.setActionHandler('play', () => { audio.play(); });
                 }
                 
-                if (navigator.wakeLock) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                }
-                
+                if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen');
                 speakTTS("시작");
-            } catch (err) { 
-                console.log(err); 
-            }
+            } catch (err) { console.log(err); }
         }
 
         function resetGame() {
-            if(confirm("진짜 처음으로 돌아가시겠습니까?\n현재 점수와 선수 배치가 모두 초기화됩니다.")) {
+            if(confirm("진짜 처음으로 돌아가시겠습니까?\n현재 점수와 배치가 모두 초기화됩니다.")) {
                 if(document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
-                
                 state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
-                historyStack = [];
-                isSystemStarted = false;
-                
+                historyStack = []; isSystemStarted = false;
                 document.getElementById('mainBoard').style.display = 'none';
                 document.getElementById('setupScreen').style.display = 'flex';
                 speakTTS("초기화");
@@ -188,36 +180,33 @@
         function swapCourt() {
             if(state.scoreLeft === 0 && state.scoreRight === 0) return;
             historyStack.push(JSON.parse(JSON.stringify(state)));
-            
             let tempScore = state.scoreLeft; state.scoreLeft = state.scoreRight; state.scoreRight = tempScore;
             let tempTeam = state.leftTeam; state.leftTeam = state.rightTeam; state.rightTeam = tempTeam;
             state.servingTeam = state.servingTeam === 'left' ? 'right' : 'left';
-            
             updateUI(); speakTTS("코트 변경");
         }
 
         function addScore(team) {
             if (!isSystemStarted) return;
-            historyStack.push(JSON.parse(JSON.stringify(state)));
+            
+            // 메뉴가 켜져 있다면 메뉴만 닫고 득점 처리 안 함
+            const menu = document.getElementById('hiddenMenu');
+            if (menu.classList.contains('show')) {
+                toggleMenu(false);
+                return;
+            }
 
+            historyStack.push(JSON.parse(JSON.stringify(state)));
             let scoringTeamData = team === 'left' ? state.leftTeam : state.rightTeam;
 
             if (team === 'left') {
                 state.scoreLeft++;
-                if (state.servingTeam === 'left') {
-                    state.isContinuous = true;
-                    let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp;
-                } else {
-                    state.isContinuous = false; state.servingTeam = 'left';
-                }
+                if (state.servingTeam === 'left') { state.isContinuous = true; let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp; } 
+                else { state.isContinuous = false; state.servingTeam = 'left'; }
             } else {
                 state.scoreRight++;
-                if (state.servingTeam === 'right') {
-                    state.isContinuous = true;
-                    let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp;
-                } else {
-                    state.isContinuous = false; state.servingTeam = 'right';
-                }
+                if (state.servingTeam === 'right') { state.isContinuous = true; let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp; } 
+                else { state.isContinuous = false; state.servingTeam = 'right'; }
             }
 
             let serveScore = state.servingTeam === 'left' ? state.scoreLeft : state.scoreRight;
@@ -225,20 +214,16 @@
             let currentServeTeamData = state.servingTeam === 'left' ? state.leftTeam : state.rightTeam;
             state.currentServerName = state.currentServerSide === 'right' ? currentServeTeamData.right : currentServeTeamData.left;
 
-            updateUI();
-            speakStatus();
+            updateUI(); speakStatus();
         }
 
         function undoScore() {
-            if (historyStack.length > 0) {
-                state = historyStack.pop(); updateUI(); speakTTS("취소");
-            }
+            if (historyStack.length > 0) { state = historyStack.pop(); updateUI(); speakTTS("취소"); }
         }
 
         function updateUI() {
             document.getElementById('scoreLeft').innerText = state.scoreLeft;
             document.getElementById('scoreRight').innerText = state.scoreRight;
-            
             document.getElementById('areaLeft').classList.remove('has-serve');
             document.getElementById('areaRight').classList.remove('has-serve');
             if (state.servingTeam === 'left') document.getElementById('areaLeft').classList.add('has-serve');
@@ -250,7 +235,6 @@
             document.getElementById('name-right-bottom').innerText = state.rightTeam.left;
 
             document.querySelectorAll('.mc-name').forEach(el => el.classList.remove('is-server'));
-
             if (state.servingTeam === 'left') {
                 if (state.currentServerSide === 'left') document.getElementById('name-left-top').classList.add('is-server');
                 else document.getElementById('name-left-bottom').classList.add('is-server');
@@ -263,11 +247,9 @@
         function speakStatus() {
             let serveScore = state.servingTeam === 'left' ? state.scoreLeft : state.scoreRight;
             let receiveScore = state.servingTeam === 'left' ? state.scoreRight : state.scoreLeft;
-            
             let text = `${serveScore} 대 ${receiveScore}`;
             if (state.isContinuous) text += `, ${state.currentServerName} 연속`;
             else text = `${state.currentServerName} 서브, ` + text;
-            
             speakTTS(text);
         }
 
@@ -283,23 +265,60 @@
             }
         }
 
-        window.addEventListener('keydown', (e) => {
-            if (!isSystemStarted) return; 
-            switch(e.key) {
-                case 'ArrowLeft': case 'a': addScore('left'); break;
-                case 'ArrowRight': case 'd': addScore('right'); break;
-                case 'Backspace': case 'z': undoScore(); break;
-            }
-        });
-        
-        // 화면 꺼짐(백그라운드 전환) 딜레이/먹통 해결 방어 로직
+        // 메뉴 토글 함수
+        function toggleMenu(show) {
+            const menu = document.getElementById('hiddenMenu');
+            if(show) menu.classList.add('show');
+            else menu.classList.remove('show');
+        }
+
+        // 터치 및 롱프레스 처리 로직
+        function setupTouchEvents() {
+            const teams = ['Left', 'Right'];
+            teams.forEach(team => {
+                const el = document.getElementById(`area${team}`);
+                let isLongPress = false;
+
+                // 마우스/터치 시작
+                const startEvent = (e) => {
+                    isLongPress = false;
+                    pressTimer = setTimeout(() => {
+                        isLongPress = true;
+                        toggleMenu(true); // 3초 경과 시 메뉴 호출
+                        // 워치 진동 피드백 (지원 시)
+                        if (navigator.vibrate) navigator.vibrate(100);
+                    }, 3000); // 3초 설정
+                };
+
+                // 마우스/터치 종료
+                const endEvent = (e) => {
+                    clearTimeout(pressTimer);
+                    // 롱프레스가 아니었을 때만 득점 처리
+                    if (!isLongPress) {
+                        // 터치 이벤트의 경우 preventDefault 처리하여 클릭 중복 방지
+                        if(e.type === 'touchend') e.preventDefault();
+                        addScore(team.toLowerCase());
+                    }
+                };
+
+                el.addEventListener('mousedown', startEvent);
+                el.addEventListener('touchstart', startEvent, {passive: false});
+                
+                el.addEventListener('mouseup', endEvent);
+                el.addEventListener('touchend', endEvent, {passive: false});
+                
+                // 손가락이 범위를 벗어나면 타이머 취소
+                el.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+                el.addEventListener('touchmove', () => clearTimeout(pressTimer));
+            });
+        }
+
         document.addEventListener("visibilitychange", async () => {
             if (document.visibilityState === "visible") {
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-                try {
-                    if (isSystemStarted && navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen');
-                } catch (err) { console.log(err); }
+                try { if (isSystemStarted && navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } 
+                catch (err) { console.log(err); }
             }
         });
     </script>
