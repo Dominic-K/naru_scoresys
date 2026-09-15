@@ -16,7 +16,7 @@
         .court-half:last-child { border-right: none; }
         .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
         .court-box:last-child { border-bottom: none; }
-        input[type="text"] { width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 10px; }
+        input[type="text"] { width: 80%; padding: 10px; font-size: 1.2rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 10px; color: #000; }
         .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; cursor: pointer; }
         .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
@@ -31,22 +31,28 @@
         .btn-reset { background-color: #9e9e9e; color: #000; }
 
         .scoreboard { display: flex; flex: 1; width: 100%; }
-        .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; }
+        .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; position: relative; }
         .team.has-serve { background-color: #1a365d; }
         .team:active { opacity: 0.7; }
-        .score { font-size: 35vmin; font-weight: 900; line-height: 1; pointer-events: none; }
+        .score { font-size: 30vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 20px; }
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
-        .server-info { font-size: 5vmin; color: #fff; margin-top: 20px; font-weight: bold; }
+
+        /* 미니 코트 UI */
+        .mini-court { display: flex; flex-direction: column; width: 45vmin; height: 25vmin; border: 3px solid #fff; background-color: #2e7d32; pointer-events: none; }
+        .mc-box { flex: 1; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #fff; }
+        .mc-box:last-child { border-bottom: none; }
+        .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 4px solid transparent; transition: 0.3s; }
+        /* 서브권자 동그라미 하이라이트 */
+        .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.3); color: #ffeb3b; }
     </style>
 </head>
 <body>
 
-    <!-- 1. 초기 선수 세팅 화면 (시선 방향 코트 반영) -->
+    <!-- 1. 초기 세팅 화면 -->
     <div id="setupScreen">
         <div class="court-title">선수 배치 및 첫 서브권 선택</div>
         <div class="court-layout">
-            <!-- 왼쪽 팀 (오른쪽을 바라봄: 위가 좌측, 아래가 우측) -->
             <div class="court-half">
                 <div class="court-box">
                     <input type="text" id="leftLeftPlayer" placeholder="왼쪽팀 좌측(위)">
@@ -57,7 +63,6 @@
                     <label class="radio-label"><input type="radio" name="firstServe" value="left-right" checked> 첫 서브</label>
                 </div>
             </div>
-            <!-- 오른쪽 팀 (왼쪽을 바라봄: 위가 우측, 아래가 좌측) -->
             <div class="court-half">
                 <div class="court-box">
                     <input type="text" id="rightRightPlayer" placeholder="오른쪽팀 우측(위)">
@@ -69,10 +74,10 @@
                 </div>
             </div>
         </div>
-        <button class="start-game-btn" onclick="initGame()">전광판 모드 시작</button>
+        <button class="start-game-btn" onclick="initGame()">전광판 모드 시작 (전체화면)</button>
     </div>
 
-    <!-- 2. 전광판 화면 -->
+    <!-- 2. 메인 전광판 -->
     <div id="mainBoard">
         <div class="header">
             <button class="btn-change" onclick="swapCourt()">코트변경</button>
@@ -83,11 +88,19 @@
         <div class="scoreboard">
             <div class="team team-left" id="areaLeft" onclick="addScore('left')">
                 <div class="score" id="scoreLeft">0</div>
-                <div class="server-info" id="serverLeft">-</div>
+                <!-- 왼쪽 팀 미니 코트 -->
+                <div class="mini-court">
+                    <div class="mc-box"><span class="mc-name" id="name-left-top"></span></div>
+                    <div class="mc-box"><span class="mc-name" id="name-left-bottom"></span></div>
+                </div>
             </div>
             <div class="team team-right" id="areaRight" onclick="addScore('right')">
                 <div class="score" id="scoreRight">0</div>
-                <div class="server-info" id="serverRight">-</div>
+                <!-- 오른쪽 팀 미니 코트 -->
+                <div class="mini-court">
+                    <div class="mc-box"><span class="mc-name" id="name-right-top"></span></div>
+                    <div class="mc-box"><span class="mc-name" id="name-right-bottom"></span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -96,15 +109,23 @@
 
     <script>
         let state = { 
-            scoreLeft: 0, scoreRight: 0, servingTeam: '', isContinuous: false, currentServerName: '',
+            scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '',
             leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' }
         };
         let historyStack = [];
         let isSystemStarted = false; let audioCtx; let voices = [];
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
+        // 전체화면 강제 실행 함수
+        function enterFullScreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(e=>console.log(e)); } 
+        }
+
         function initGame() {
-            // 시선 방향에 맞춘 데이터 매핑
+            enterFullScreen(); // 시작 버튼 누를 때 전체화면 진입
+
             state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 위";
             state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 아래";
             state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 위";
@@ -114,6 +135,7 @@
             const [team, position] = firstServe.split('-');
             
             state.servingTeam = team;
+            state.currentServerSide = position;
             state.currentServerName = state[team + "Team"][position];
             
             document.getElementById('setupScreen').style.display = 'none';
@@ -123,7 +145,9 @@
 
         function resetGame() {
             if(confirm("진짜 처음으로 돌아가시겠습니까?\n현재 점수와 선수 배치가 모두 초기화됩니다.")) {
-                state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
+                if(document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
+                
+                state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
                 historyStack = [];
                 isSystemStarted = false;
                 
@@ -157,7 +181,6 @@
                 state.scoreLeft++;
                 if (state.servingTeam === 'left') {
                     state.isContinuous = true;
-                    // 서브권 유지 득점 시 좌우 자리 교대 (배드민턴 룰)
                     let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp;
                 } else {
                     state.isContinuous = false; state.servingTeam = 'left';
@@ -172,10 +195,10 @@
                 }
             }
 
-            // 득점 후 해당 팀의 짝수/홀수 점수에 따라 서브자 결정
             let serveScore = state.servingTeam === 'left' ? state.scoreLeft : state.scoreRight;
+            state.currentServerSide = serveScore % 2 === 0 ? 'right' : 'left';
             let currentServeTeamData = state.servingTeam === 'left' ? state.leftTeam : state.rightTeam;
-            state.currentServerName = serveScore % 2 === 0 ? currentServeTeamData.right : currentServeTeamData.left;
+            state.currentServerName = state.currentServerSide === 'right' ? currentServeTeamData.right : currentServeTeamData.left;
 
             updateUI();
             speakStatus();
@@ -193,15 +216,25 @@
             
             document.getElementById('areaLeft').classList.remove('has-serve');
             document.getElementById('areaRight').classList.remove('has-serve');
-            document.getElementById('serverLeft').innerText = "";
-            document.getElementById('serverRight').innerText = "";
+            if (state.servingTeam === 'left') document.getElementById('areaLeft').classList.add('has-serve');
+            else document.getElementById('areaRight').classList.add('has-serve');
 
+            // 미니 코트 이름 업데이트
+            document.getElementById('name-left-top').innerText = state.leftTeam.left;
+            document.getElementById('name-left-bottom').innerText = state.leftTeam.right;
+            document.getElementById('name-right-top').innerText = state.rightTeam.right;
+            document.getElementById('name-right-bottom').innerText = state.rightTeam.left;
+
+            // 서브권자 동그라미 초기화
+            document.querySelectorAll('.mc-name').forEach(el => el.classList.remove('is-server'));
+
+            // 현재 서브권자 동그라미 표시
             if (state.servingTeam === 'left') {
-                document.getElementById('areaLeft').classList.add('has-serve');
-                document.getElementById('serverLeft').innerText = "서브: " + state.currentServerName;
+                if (state.currentServerSide === 'left') document.getElementById('name-left-top').classList.add('is-server');
+                else document.getElementById('name-left-bottom').classList.add('is-server');
             } else {
-                document.getElementById('areaRight').classList.add('has-serve');
-                document.getElementById('serverRight').innerText = "서브: " + state.currentServerName;
+                if (state.currentServerSide === 'right') document.getElementById('name-right-top').classList.add('is-server');
+                else document.getElementById('name-right-bottom').classList.add('is-server');
             }
         }
 
@@ -210,11 +243,9 @@
             let receiveScore = state.servingTeam === 'left' ? state.scoreRight : state.scoreLeft;
             
             let text = `${serveScore} 대 ${receiveScore}`;
-            if (state.isContinuous) {
-                text += `, ${state.currentServerName} 연속`;
-            } else {
-                text = `${state.currentServerName} 서브, ` + text;
-            }
+            if (state.isContinuous) text += `, ${state.currentServerName} 연속`;
+            else text = `${state.currentServerName} 서브, ` + text;
+            
             speakTTS(text);
         }
 
@@ -223,7 +254,6 @@
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'ko-KR'; utterance.rate = 1.15; 
-                
                 if (voices.length === 0) voices = window.speechSynthesis.getVoices();
                 const koreanVoices = voices.filter(v => v.lang === 'ko-KR' || v.lang === 'ko_KR');
                 if (koreanVoices.length > 0) utterance.voice = koreanVoices[0];
