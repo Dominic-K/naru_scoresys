@@ -6,25 +6,29 @@
     <title>배드민턴 전광판 Pro</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        /* 100dvh(동적 뷰포트)를 사용하여 모바일 브라우저 주소창 스크롤 이슈 방지 */
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* 설정 화면 */
-        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; }
-        .court-title { text-align: center; font-size: 1.8rem; margin-bottom: 20px; font-weight: bold; }
-        .court-layout { flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px; }
+        /* 설정 화면 (폴드 가로 모드 대응 스크롤 허용) */
+        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; overflow-y: auto; }
+        
+        /* 상단 헤더 (제목 + 전체화면 버튼) */
+        .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+        .court-title { font-size: 1.5rem; font-weight: bold; }
+        .btn-fullscreen-toggle { background-color: #111; color: #fff; border: 2px solid #fff; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .btn-fullscreen-toggle:active { background-color: #333; }
+
+        .court-layout { flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px; min-height: 200px; }
         .court-half { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #fff; }
         .court-half:last-child { border-right: none; }
         .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
         .court-box:last-child { border-bottom: none; }
         input[type="text"] { width: 90%; padding: 12px; font-size: 1.1rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 8px; color: #000; }
         .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; }
+        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; flex-shrink: 0; margin-bottom: 20px; }
         
-        /* 💡 핵심: 전광판 화면 컨테이너 (여기만 스크롤 허용) */
+        /* 전광판 화면 컨테이너 */
         #mainBoard { display: none; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
         
-        /* 점수판 영역: 무조건 화면 100% 높이 꽉 채움 */
         .scoreboard { display: flex; width: 100%; min-height: 100vh; min-height: 100dvh; flex-shrink: 0; }
         .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; position: relative; }
         .team.has-serve { background-color: #1a365d; }
@@ -33,20 +37,18 @@
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
 
-        /* 미니 코트 */
         .mini-court { display: flex; flex-direction: column; width: 45vmin; height: 25vmin; border: 2px solid #fff; background-color: #2e7d32; pointer-events: none; }
         .mc-box { flex: 1; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #fff; }
         .mc-box:last-child { border-bottom: none; }
         .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; }
         .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.3); color: #ffeb3b; }
 
-        /* 💡 하단 스크롤 메뉴 (점수판 바로 밑에 붙어있음) */
+        /* 하단 스크롤 메뉴 */
         #scrollMenu { 
             display: flex; justify-content: center; align-items: flex-start; gap: 10px; 
-            /* 하단 패딩 80px로 폴드 하단바/잘림 완벽 방어 */
             padding: 20px 10px 80px 10px; 
             background-color: #111; border-top: 2px solid #333; 
-            flex-shrink: 0; /* 내용물 찌그러짐 방지 */
+            flex-shrink: 0; 
         }
         #scrollMenu button { 
             flex: 1; padding: 18px 0; font-size: 1.2rem; 
@@ -61,7 +63,12 @@
 
     <!-- 설정 화면 -->
     <div id="setupScreen">
-        <div class="court-title">선수 배치 및 시작</div>
+        <!-- 상단 헤더: 전체화면 수동 진입 버튼 -->
+        <div class="setup-header">
+            <div class="court-title">선수 배치</div>
+            <button class="btn-fullscreen-toggle" onclick="enterFullScreen()">⛶ 전체화면 켜기</button>
+        </div>
+        
         <div class="court-layout">
             <div class="court-half">
                 <div class="court-box">
@@ -89,7 +96,6 @@
 
     <!-- 전광판 스크롤 컨테이너 -->
     <div id="mainBoard">
-        <!-- 메인 점수판 영역 (클릭 이벤트 부활) -->
         <div class="scoreboard">
             <div class="team team-left" id="areaLeft" onclick="addScore('left')">
                 <div class="score" id="scoreLeft">0</div>
@@ -107,7 +113,6 @@
             </div>
         </div>
 
-        <!-- 스크롤 시 나타나는 하단 메뉴 -->
         <div id="scrollMenu">
             <button class="btn-change" onclick="swapCourt()">코트 변경</button>
             <button class="btn-undo" onclick="undoScore()">실행 취소</button>
@@ -123,6 +128,7 @@
 
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
+        // 전체화면 요청 함수 (언제든 호출 가능)
         function enterFullScreen() {
             let elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); } 
@@ -131,7 +137,7 @@
 
         async function initGame() {
             document.activeElement.blur();
-            enterFullScreen(); 
+            enterFullScreen(); // 게임 시작 시에도 다시 한번 전체화면 보장
 
             state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 1";
             state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 2";
@@ -149,7 +155,6 @@
             isSystemStarted = true;
             updateUI();
             
-            // 시작 시 무조건 최상단 스크롤 위치 보장
             document.getElementById('mainBoard').scrollTo(0, 0);
 
             try {
@@ -183,14 +188,12 @@
             state.servingTeam = state.servingTeam === 'left' ? 'right' : 'left';
             updateUI(); speakTTS("코트 변경");
             
-            // 코트 변경 후 다시 위로 스크롤 올려줌
             document.getElementById('mainBoard').scrollTo(0, 0);
         }
 
         function addScore(team) {
             if (!isSystemStarted) return;
             
-            // 점수 터치 시 메뉴가 열려있다면(스크롤이 내려가 있다면) 위로 올리고 점수 반영
             if(document.getElementById('mainBoard').scrollTop > 10) {
                 document.getElementById('mainBoard').scrollTo(0, 0);
             }
@@ -219,7 +222,6 @@
         function undoScore() {
             if (historyStack.length > 0) { 
                 state = historyStack.pop(); updateUI(); speakTTS("취소"); 
-                // 취소 후 다시 위로 스크롤
                 document.getElementById('mainBoard').scrollTo(0, 0);
             }
         }
