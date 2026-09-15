@@ -8,20 +8,21 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        /* 설정 화면 (세로 화면에 맞게 다이어트) */
-        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 15px; }
-        .court-title { text-align: center; font-size: 1.5rem; margin-bottom: 10px; font-weight: bold; }
-        .court-layout { flex: 1; display: flex; border: 3px solid #fff; position: relative; margin-bottom: 15px; }
+        /* 1. 설정 화면 (스마트폰 세로 꽉 차게) */
+        #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; }
+        .court-title { text-align: center; font-size: 1.8rem; margin-bottom: 20px; font-weight: bold; }
+        .court-layout { flex: 1; display: flex; border: 4px solid #fff; position: relative; margin-bottom: 20px; }
         .court-half { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #fff; }
         .court-half:last-child { border-right: none; }
-        .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 5px; }
+        .court-box { flex: 1; border-bottom: 2px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
         .court-box:last-child { border-bottom: none; }
-        input[type="text"] { width: 90%; padding: 8px; font-size: 1rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 5px; color: #000; }
-        .radio-label { font-size: 0.9rem; background: rgba(0,0,0,0.5); padding: 5px 8px; border-radius: 5px; cursor: pointer; }
-        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.2rem; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        input[type="text"] { width: 90%; padding: 12px; font-size: 1.1rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 8px; color: #000; }
+        .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 5px; cursor: pointer; }
         
-        /* 전광판 화면 */
-        #mainBoard { display: none; flex-direction: column; height: 100%; position: relative; }
+        .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; }
+        
+        /* 2. 전광판 화면 */
+        #mainBoard { display: none; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
         .scoreboard { display: flex; flex: 1; width: 100%; }
         .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; position: relative; }
         .team.has-serve { background-color: #1a365d; }
@@ -37,16 +38,16 @@
         .mc-name { font-size: 4vmin; font-weight: bold; color: #fff; padding: 5px 15px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; }
         .mc-name.is-server { border-color: #ffeb3b; background-color: rgba(255, 235, 59, 0.3); color: #ffeb3b; }
 
-        /* 히든 메뉴 바 (하단에서 스르륵 올라옴) */
+        /* 3. 하단 슬라이드 업 숨김 메뉴 (스마트폰용) */
         #hiddenMenu { 
             position: absolute; bottom: -100px; left: 0; width: 100%; 
-            display: flex; justify-content: center; align-items: center; gap: 15px; 
-            padding: 15px; background-color: rgba(17, 17, 17, 0.9); border-top: 2px solid #333; 
-            transition: bottom 0.3s ease-in-out; z-index: 20; 
+            display: flex; justify-content: center; align-items: center; gap: 10px; 
+            padding: 20px 10px; background-color: rgba(17, 17, 17, 0.95); border-top: 2px solid #333; 
+            transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 20; 
         }
         #hiddenMenu.show { bottom: 0; }
         #hiddenMenu button { 
-            flex: 1; max-width: 120px; padding: 12px; font-size: 1rem; 
+            flex: 1; padding: 15px 0; font-size: 1.1rem; 
             border-radius: 8px; cursor: pointer; font-weight: bold; border: none; color: #fff; 
         }
         .btn-change { background-color: #ffa726; color: #000 !important; }
@@ -56,35 +57,36 @@
 </head>
 <body>
 
+    <!-- 설정 화면 -->
     <div id="setupScreen">
-        <div class="court-title">선수 배치 및 첫 서브권 선택</div>
+        <div class="court-title">선수 배치 및 시작</div>
         <div class="court-layout">
             <div class="court-half">
                 <div class="court-box">
-                    <input type="text" id="leftLeftPlayer" placeholder="왼팀 좌측(위)">
-                    <label class="radio-label"><input type="radio" name="firstServe" value="left-left"> 첫 서브</label>
+                    <input type="text" id="leftLeftPlayer" placeholder="왼팀 상단">
+                    <label class="radio-label"><input type="radio" name="firstServe" value="left-left"> 서브</label>
                 </div>
                 <div class="court-box">
-                    <input type="text" id="leftRightPlayer" placeholder="왼팀 우측(아래)">
-                    <label class="radio-label"><input type="radio" name="firstServe" value="left-right" checked> 첫 서브</label>
+                    <input type="text" id="leftRightPlayer" placeholder="왼팀 하단">
+                    <label class="radio-label"><input type="radio" name="firstServe" value="left-right" checked> 서브</label>
                 </div>
             </div>
             <div class="court-half">
                 <div class="court-box">
-                    <input type="text" id="rightRightPlayer" placeholder="오른팀 우측(위)">
-                    <label class="radio-label"><input type="radio" name="firstServe" value="right-right"> 첫 서브</label>
+                    <input type="text" id="rightRightPlayer" placeholder="오른팀 상단">
+                    <label class="radio-label"><input type="radio" name="firstServe" value="right-right"> 서브</label>
                 </div>
                 <div class="court-box">
-                    <input type="text" id="rightLeftPlayer" placeholder="오른팀 좌측(아래)">
-                    <label class="radio-label"><input type="radio" name="firstServe" value="right-left"> 첫 서브</label>
+                    <input type="text" id="rightLeftPlayer" placeholder="오른팀 하단">
+                    <label class="radio-label"><input type="radio" name="firstServe" value="right-left"> 서브</label>
                 </div>
             </div>
         </div>
-        <button class="start-game-btn" onclick="initGame()">전광판 모드 시작 (전체화면)</button>
+        <button class="start-game-btn" onclick="initGame()">게임 시작</button>
     </div>
 
+    <!-- 전광판 화면 -->
     <div id="mainBoard">
-        <!-- 터치/롱프레스 이벤트를 받는 실제 점수판 영역 -->
         <div class="scoreboard">
             <div class="team team-left" id="areaLeft">
                 <div class="score" id="scoreLeft">0</div>
@@ -102,11 +104,11 @@
             </div>
         </div>
 
-        <!-- 3초 꾹 누르면 올라오는 히든 메뉴 -->
+        <!-- 하단에서 올라오는 메뉴 -->
         <div id="hiddenMenu">
-            <button class="btn-change" onclick="swapCourt(); toggleMenu(false);">코트변경</button>
-            <button class="btn-undo" onclick="undoScore(); toggleMenu(false);">실행취소</button>
-            <button class="btn-reset" onclick="resetGame(); toggleMenu(false);">초기화</button>
+            <button class="btn-change" onclick="swapCourt(); toggleMenu(false);">코트 변경</button>
+            <button class="btn-undo" onclick="undoScore(); toggleMenu(false);">실행 취소</button>
+            <button class="btn-reset" onclick="resetGame(); toggleMenu(false);">전체 초기화</button>
         </div>
     </div>
 
@@ -115,7 +117,7 @@
     <script>
         let state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
         let historyStack = []; let isSystemStarted = false; let audioCtx; let voices = []; let wakeLock = null;
-        let pressTimer; // 롱프레스 타이머
+        let pressTimer;
 
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
@@ -126,12 +128,14 @@
         }
 
         async function initGame() {
+            // 키보드가 열려있을 수 있으므로 포커스 해제
+            document.activeElement.blur();
             enterFullScreen(); 
 
-            state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 위";
-            state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 아래";
-            state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 위";
-            state.rightTeam.left = document.getElementById('rightLeftPlayer').value || "오른쪽 아래";
+            state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 1";
+            state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 2";
+            state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 1";
+            state.rightTeam.left = document.getElementById('rightLeftPlayer').value || "오른쪽 2";
 
             const firstServe = document.querySelector('input[name="firstServe"]:checked').value;
             const [team, position] = firstServe.split('-');
@@ -151,23 +155,13 @@
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
                 const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
                 gain.gain.value = 0.0001; osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
-
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({ title: '배드민턴 전광판 Pro' });
-                    navigator.mediaSession.playbackState = "playing";
-                    navigator.mediaSession.setActionHandler('nexttrack', () => { addScore('right'); });
-                    navigator.mediaSession.setActionHandler('previoustrack', () => { addScore('left'); });
-                    navigator.mediaSession.setActionHandler('pause', () => { undoScore(); });
-                    navigator.mediaSession.setActionHandler('play', () => { audio.play(); });
-                }
-                
                 if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen');
                 speakTTS("시작");
             } catch (err) { console.log(err); }
         }
 
         function resetGame() {
-            if(confirm("진짜 처음으로 돌아가시겠습니까?\n현재 점수와 배치가 모두 초기화됩니다.")) {
+            if(confirm("초기화 하시겠습니까?")) {
                 if(document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
                 state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
                 historyStack = []; isSystemStarted = false;
@@ -189,7 +183,6 @@
         function addScore(team) {
             if (!isSystemStarted) return;
             
-            // 메뉴가 켜져 있다면 메뉴만 닫고 득점 처리 안 함
             const menu = document.getElementById('hiddenMenu');
             if (menu.classList.contains('show')) {
                 toggleMenu(false);
@@ -265,37 +258,30 @@
             }
         }
 
-        // 메뉴 토글 함수
         function toggleMenu(show) {
             const menu = document.getElementById('hiddenMenu');
             if(show) menu.classList.add('show');
             else menu.classList.remove('show');
         }
 
-        // 터치 및 롱프레스 처리 로직
         function setupTouchEvents() {
             const teams = ['Left', 'Right'];
             teams.forEach(team => {
                 const el = document.getElementById(`area${team}`);
                 let isLongPress = false;
 
-                // 마우스/터치 시작
                 const startEvent = (e) => {
                     isLongPress = false;
                     pressTimer = setTimeout(() => {
                         isLongPress = true;
-                        toggleMenu(true); // 3초 경과 시 메뉴 호출
-                        // 워치 진동 피드백 (지원 시)
-                        if (navigator.vibrate) navigator.vibrate(100);
-                    }, 1500); // 3초 설정
+                        toggleMenu(true);
+                        if (navigator.vibrate) navigator.vibrate(50); // 짧은 햅틱 피드백
+                    }, 1500); // 스마트폰에 최적화된 1.5초
                 };
 
-                // 마우스/터치 종료
                 const endEvent = (e) => {
                     clearTimeout(pressTimer);
-                    // 롱프레스가 아니었을 때만 득점 처리
                     if (!isLongPress) {
-                        // 터치 이벤트의 경우 preventDefault 처리하여 클릭 중복 방지
                         if(e.type === 'touchend') e.preventDefault();
                         addScore(team.toLowerCase());
                     }
@@ -303,11 +289,8 @@
 
                 el.addEventListener('mousedown', startEvent);
                 el.addEventListener('touchstart', startEvent, {passive: false});
-                
                 el.addEventListener('mouseup', endEvent);
                 el.addEventListener('touchend', endEvent, {passive: false});
-                
-                // 손가락이 범위를 벗어나면 타이머 취소
                 el.addEventListener('mouseleave', () => clearTimeout(pressTimer));
                 el.addEventListener('touchmove', () => clearTimeout(pressTimer));
             });
