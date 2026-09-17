@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>배드민턴 전광판 Pro</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        html, body { overscroll-behavior: none; }
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
         /* 1. 설정 화면 */
@@ -24,13 +24,20 @@
         .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 5px; cursor: pointer; }
         .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; flex-shrink: 0; margin-bottom: 20px; }
         
-        /* 2. 전광판 화면 컨테이너 (스크롤 허용) */
-        #mainBoard { display: none; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+        /*
+         * 2. 전광판 화면 컨테이너
+         * [변경] 예전엔 overflow-y:auto로 스크롤이 가능했고, 그 아래에 scrollMenu가
+         * 문서 흐름에 이어붙어 있어서 전체 콘텐츠 높이가 화면보다 커졌었다.
+         * 그게 바로 베젤 회전이 "스크롤"로 해석되게 만든 근본 원인이었다.
+         * 지금은 화면에 스크롤 가능한 영역이 아예 존재하지 않도록
+         * overflow: hidden으로 완전히 막고, scoreboard 하나만 화면을 꽉 채운다.
+         */
+        #mainBoard { display: none; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
         
-        .scoreboard { display: flex; width: 100%; min-height: 100vh; min-height: 100dvh; flex-shrink: 0; position: relative; }
-        .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; }
+        .scoreboard { display: flex; width: 100%; flex: 1; position: relative; touch-action: none; }
+        .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; }
         .team.has-serve { background-color: #1a365d; }
-        .team:active { opacity: 0.7; }
+        .team.is-pressing { opacity: 0.7; }
         .score { font-size: 35vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 15vmin; }
         .team-left .score { color: #00ff00; } 
         .team-right .score { color: #ffff00; } 
@@ -68,14 +75,35 @@
         .anim-rb-lt { animation: fly-right-bottom-to-left-top 1.5s infinite; }
 
         /* 선수 토큰(UI) 레이어 */
-        .court-half-ui { flex: 1; display: flex; flex-direction: column; z-index: 10; }
+        .court-half-ui { flex: 1; display: flex; flex-direction: column; z-index: 10; pointer-events: none; }
         .mc-box-ui { flex: 1; display: flex; justify-content: center; align-items: center; }
         .mc-name { font-size: 3.5vmin; font-weight: bold; color: #fff; padding: 6px 16px; border-radius: 30px; border: 3px solid transparent; transition: 0.3s; background-color: rgba(0, 0, 0, 0.4); text-shadow: 1px 1px 2px #000; }
         .mc-name.is-server { border-color: #ffca28; background-color: rgba(255, 202, 40, 0.9); color: #000; text-shadow: none; box-shadow: 0 0 10px rgba(255, 202, 40, 0.6); }
 
-        /* 5. 하단 스크롤 메뉴 (그리드) */
-        #scrollMenu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px 15px 80px 15px; background-color: #111; border-top: 2px solid #333; flex-shrink: 0; }
-        #scrollMenu button { padding: 22px 0; font-size: 1.2rem; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; color: #fff; }
+        /*
+         * 5. 메뉴 버튼들
+         * [변경] 예전엔 이 버튼들이 scoreboard 아래에 이어붙어서, 보려면 아래로
+         * "스크롤"을 해야 했다. 그런데 그 스크롤 가능한 공간 자체가 베젤 오작동의
+         * 원인이었으므로, 이제는 화면 흐름에서 완전히 빼고 평소엔 숨겨둔
+         * 오버레이(모달) 형태로 바꿨다. 점수 영역을 꾹 누르고 있으면(롱프레스)
+         * 뜨고, 우상단의 작은 점 세개(⋮) 아이콘을 눌러도 뜬다.
+         */
+        .menu-hint {
+            position: fixed; top: 1.5vmin; right: 1.5vmin; z-index: 50;
+            font-size: 5vmin; line-height: 1; padding: 1.5vmin 2.2vmin;
+            color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.08);
+            border-radius: 50%; cursor: pointer;
+        }
+        .menu-overlay {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.82); align-items: center; justify-content: center; padding: 20px;
+        }
+        .menu-overlay.open { display: flex; }
+        .menu-panel {
+            width: 100%; max-width: 420px; display: grid;
+            grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .menu-panel button { padding: 22px 0; font-size: 1.2rem; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; color: #fff; }
         .btn-change { background-color: #ffa726; color: #000 !important; }
         .btn-fullscreen-menu { background-color: #4CAF50; }
         .btn-undo { background-color: #ff5252; }
@@ -116,10 +144,10 @@
 
     <div id="mainBoard">
         <div class="scoreboard">
-            <div class="team team-left" id="areaLeft" onclick="addScore('left')">
+            <div class="team team-left" id="areaLeft">
                 <div class="score" id="scoreLeft">0</div>
             </div>
-            <div class="team team-right" id="areaRight" onclick="addScore('right')">
+            <div class="team team-right" id="areaRight">
                 <div class="score" id="scoreRight">0</div>
             </div>
 
@@ -147,15 +175,19 @@
             </div>
         </div>
 
-        <div id="scrollMenu">
-            <button class="btn-change" onclick="swapCourt()">코트 변경</button>
-            <button class="btn-fullscreen-menu" onclick="enterFullScreen()">⛶ 전체화면 복구</button>
-            <button class="btn-undo" onclick="undoScore()">실행 취소</button>
-            <button class="btn-reset" onclick="resetGame()">전체 초기화</button>
+        <!-- 우상단 메뉴 아이콘: 롱프레스가 안 먹힐 때를 위한 보조 버튼 -->
+        <div class="menu-hint" onclick="openMenu()">⋮</div>
+
+        <!-- 메뉴 오버레이: 평소엔 숨겨져 있다가, 점수 영역을 꾹 누르거나 위 아이콘을 누르면 뜸 -->
+        <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()">
+            <div class="menu-panel" onclick="event.stopPropagation()">
+                <button class="btn-change" onclick="swapCourt(); closeMenu();">코트 변경</button>
+                <button class="btn-fullscreen-menu" onclick="enterFullScreen(); closeMenu();">⛶ 전체화면 복구</button>
+                <button class="btn-undo" onclick="undoScore(); closeMenu();">실행 취소</button>
+                <button class="btn-reset" onclick="resetGame()">전체 초기화</button>
+            </div>
         </div>
     </div>
-
-    <audio id="silentAudio" loop playsinline><source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" type="audio/wav"></audio>
 
     <script>
         let state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
@@ -167,7 +199,6 @@
             let elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); } 
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(e=>console.log(e)); } 
-            if(isSystemStarted) document.getElementById('mainBoard').scrollTo(0, 0);
         }
 
         async function initGame() {
@@ -189,10 +220,17 @@
             
             isSystemStarted = true;
             updateUI();
-            document.getElementById('mainBoard').scrollTo(0, 0);
 
             try {
-                const audio = document.getElementById('silentAudio'); audio.play().catch(e=>console.log(e));
+                // [변경] 예전엔 여기서 무음 <audio loop> 태그를 재생시켜 "미디어 세션"을
+                // 계속 활성 상태로 유지했다. 그런데 Wear OS는 미디어가 재생 중이면
+                // 베젤/터치링 회전을 "미디어 볼륨 조절"로 가로채 버린다 — 실제로
+                // 처음 베젤을 돌리면 음량이 바뀌던 증상이 바로 이것 때문이었다.
+                // 화면을 계속 켜두는 역할은 아래 Screen Wake Lock API가 이미
+                // 담당하고 있으므로, 볼륨을 가로채는 <audio> 재생은 제거했다.
+                // (오실레이터는 순수 Web Audio API 노드라 <audio> 태그처럼
+                // 안드로이드 미디어 세션에 잡히지 않을 가능성이 높아 일단 남겨뒀다.
+                // 그래도 베젤이 여전히 볼륨으로 잡히면 이 오실레이터도 의심해봐야 함.)
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!audioCtx) audioCtx = new AudioContext();
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -208,6 +246,7 @@
                 if(document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
                 state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
                 historyStack = []; isSystemStarted = false;
+                closeMenu();
                 document.getElementById('mainBoard').style.display = 'none';
                 document.getElementById('setupScreen').style.display = 'flex';
                 speakTTS("초기화");
@@ -221,12 +260,10 @@
             let tempTeam = state.leftTeam; state.leftTeam = state.rightTeam; state.rightTeam = tempTeam;
             state.servingTeam = state.servingTeam === 'left' ? 'right' : 'left';
             updateUI(); speakTTS("코트 변경");
-            document.getElementById('mainBoard').scrollTo(0, 0);
         }
 
         function addScore(team) {
             if (!isSystemStarted) return;
-            if(document.getElementById('mainBoard').scrollTop > 10) { document.getElementById('mainBoard').scrollTo(0, 0); return; }
 
             historyStack.push(JSON.parse(JSON.stringify(state)));
             let scoringTeamData = team === 'left' ? state.leftTeam : state.rightTeam;
@@ -252,7 +289,6 @@
         function undoScore() {
             if (historyStack.length > 0) { 
                 state = historyStack.pop(); updateUI(); speakTTS("취소"); 
-                document.getElementById('mainBoard').scrollTo(0, 0);
             }
         }
 
@@ -315,25 +351,92 @@
             }
         }
 
-        // ⌚ 갤럭시 워치 회전 베젤(터치 베젤) → wheel 이벤트 득점 조작 로직
-        //
-        // [수정 이유]
-        // Wear OS는 베젤 회전을 "현재 화면에 보이는 스크롤 가능 영역을 스크롤하라"는
-        // 신호로 넘긴다. #mainBoard가 바로 그 스크롤 가능 영역(overflow-y:auto)이기
-        // 때문에, 베젤을 돌리면 브라우저가 기본 동작으로 #mainBoard를 실제로 스크롤
-        // 시켜버린다. 그러면 addScore() 안의 "scrollTop > 10이면 무시" 가드에 걸려서
-        // 베젤 입력이 들어와도 점수가 절대 오르지 않는다.
-        //
-        // 이를 막으려면 wheel 이벤트가 들어왔을 때 브라우저의 기본 스크롤 동작을
-        // e.preventDefault()로 차단해야 한다. 단, Chrome 73부터는 window/document/body에
-        // 등록된 wheel 리스너가 기본적으로 passive: true로 취급되어 preventDefault()가
-        // 무시되므로, 반드시 { passive: false }를 명시적으로 지정해야 한다.
+        // ====================================================================
+        // 메뉴 오버레이 열기/닫기
+        // ====================================================================
+        function openMenu() {
+            if (!isSystemStarted) return;
+            document.getElementById('menuOverlay').classList.add('open');
+        }
+        function closeMenu() {
+            document.getElementById('menuOverlay').classList.remove('open');
+        }
+
+        // ====================================================================
+        // 점수 영역 탭 vs 롱프레스 구분
+        // ----------------------------------------------------------------------
+        // 예전엔 onclick="addScore(...)" 하나로 끝났지만, 이제 "짧게 탭하면 점수,
+        // 꾹 누르고 있으면 메뉴"를 구분해야 해서 pointerdown/up/move/cancel로
+        // 직접 처리한다. Pointer Events는 터치/마우스/펜을 하나의 API로 다루기
+        // 때문에 폰 브라우저와 워치 브라우저 양쪽에서 동일하게 동작한다.
+        // ====================================================================
+        const LONG_PRESS_MS = 550;   // 이 시간(ms) 이상 누르고 있으면 롱프레스로 판정
+        const MOVE_CANCEL_PX = 18;   // 누른 채로 이만큼(px) 움직이면 롱프레스/탭 모두 취소
+        let pressTimer = null;
+        let longPressFired = false;
+        let pressStartX = 0, pressStartY = 0;
+
+        function handlePointerDown(e, side, el) {
+            if (!isSystemStarted) return;
+            longPressFired = false;
+            pressStartX = e.clientX; pressStartY = e.clientY;
+            el.classList.add('is-pressing');
+            pressTimer = setTimeout(() => {
+                longPressFired = true;
+                if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+                el.classList.remove('is-pressing');
+                openMenu();
+            }, LONG_PRESS_MS);
+        }
+
+        function handlePointerMove(e, el) {
+            if (!pressTimer) return;
+            const dx = e.clientX - pressStartX;
+            const dy = e.clientY - pressStartY;
+            if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) {
+                clearTimeout(pressTimer); pressTimer = null;
+                el.classList.remove('is-pressing');
+            }
+        }
+
+        function handlePointerUp(side, el) {
+            el.classList.remove('is-pressing');
+            if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+            if (longPressFired) { longPressFired = false; return; } // 이미 메뉴가 열렸으니 점수는 추가 안 함
+            addScore(side);
+        }
+
+        function handlePointerCancel(el) {
+            el.classList.remove('is-pressing');
+            if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+            longPressFired = false;
+        }
+
+        const areaLeft = document.getElementById('areaLeft');
+        const areaRight = document.getElementById('areaRight');
+        areaLeft.addEventListener('pointerdown', (e) => handlePointerDown(e, 'left', areaLeft));
+        areaLeft.addEventListener('pointermove', (e) => handlePointerMove(e, areaLeft));
+        areaLeft.addEventListener('pointerup', () => handlePointerUp('left', areaLeft));
+        areaLeft.addEventListener('pointercancel', () => handlePointerCancel(areaLeft));
+        areaRight.addEventListener('pointerdown', (e) => handlePointerDown(e, 'right', areaRight));
+        areaRight.addEventListener('pointermove', (e) => handlePointerMove(e, areaRight));
+        areaRight.addEventListener('pointerup', () => handlePointerUp('right', areaRight));
+        areaRight.addEventListener('pointercancel', () => handlePointerCancel(areaRight));
+
+        // ====================================================================
+        // ⌚ 갤럭시 워치 베젤/터치링 → wheel 이벤트로 득점 조작
+        // ----------------------------------------------------------------------
+        // [변경] 이제 화면에 스크롤 가능한 영역이 아예 없으므로(overflow:hidden),
+        // 베젤 회전이 예전처럼 mainBoard를 스크롤시켜서 addScore를 막아버리는
+        // 문제 자체가 구조적으로 사라진다. wheel 리스너는 예전과 동일하게
+        // preventDefault + passive:false 조합을 유지해서, 혹시라도 브라우저가
+        // 기본 스크롤 동작을 시도하려는 낌새가 있으면 그것까지 막아준다.
+        // ====================================================================
         let bezelCooldown = false; 
         window.addEventListener('wheel', (e) => {
             if (!isSystemStarted || bezelCooldown) return;
+            if (document.getElementById('menuOverlay').classList.contains('open')) return; // 메뉴 열려있으면 무시
 
-            // 베젤 회전으로 인해 브라우저가 #mainBoard를 스크롤하는 기본 동작을 차단.
-            // 이게 없으면 mainBoard.scrollTop이 움직여서 addScore()가 계속 무시된다.
             e.preventDefault();
 
             if (e.deltaY > 10) {
@@ -346,7 +449,7 @@
                 if (navigator.vibrate) navigator.vibrate(50); 
                 lockBezel();
             }
-        }, { passive: false }); // ← 이 옵션이 있어야 위 preventDefault()가 실제로 동작함
+        }, { passive: false });
 
         function lockBezel() {
             bezelCooldown = true;
