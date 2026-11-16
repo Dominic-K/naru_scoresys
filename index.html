@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         html, body { overscroll-behavior: none; }
         body { background-color: #000; color: #fff; font-family: 'Pretendard', 'Arial', sans-serif; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-        
+
         /* 1. 설정 화면 */
         #setupScreen { display: flex; flex-direction: column; height: 100%; background-color: #2e7d32; padding: 20px; overflow-y: auto; }
         .setup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
@@ -23,7 +23,7 @@
         input[type="text"] { width: 90%; padding: 12px; font-size: 1.1rem; text-align: center; border-radius: 5px; border: none; margin-bottom: 8px; color: #000; }
         .radio-label { font-size: 1rem; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 5px; cursor: pointer; }
         .start-game-btn { background-color: #ffca28; color: #000; font-size: 1.5rem; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: auto; flex-shrink: 0; margin-bottom: 20px; }
-        
+
         /*
          * 2. 전광판 화면 컨테이너
          * [변경] 예전엔 overflow-y:auto로 스크롤이 가능했고, 그 아래에 scrollMenu가
@@ -33,19 +33,19 @@
          * overflow: hidden으로 완전히 막고, scoreboard 하나만 화면을 꽉 채운다.
          */
         #mainBoard { display: none; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
-        
+
         .scoreboard { display: flex; width: 100%; flex: 1; position: relative; touch-action: none; }
         .team { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #000; transition: 0.2s ease; border-right: 2px solid #222; }
         .team.has-serve { background-color: #1a365d; }
         .team.is-pressing { opacity: 0.7; }
         .score { font-size: 35vmin; font-weight: 900; line-height: 1; pointer-events: none; margin-bottom: 15vmin; }
-        .team-left .score { color: #00ff00; } 
-        .team-right .score { color: #ffff00; } 
+        .team-left .score { color: #00ff00; }
+        .team-right .score { color: #ffff00; }
 
         /* 3. 리얼 배드민턴 코트 디테일 */
         .combined-court {
             position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
-            display: flex; width: 90vmin; height: 26vmin; border: 3px solid #fff; 
+            display: flex; width: 90vmin; height: 26vmin; border: 3px solid #fff;
             background-color: #2e7d32; pointer-events: none; z-index: 10;
             box-shadow: 0 10px 20px rgba(0,0,0,0.7); overflow: hidden;
         }
@@ -63,12 +63,12 @@
         /* 4. 서브 화살표 애니메이션 레이어 */
         .serve-arrow-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 8; }
         .shuttle-arrow { position: absolute; width: 4vmin; height: 4vmin; font-size: 4vmin; color: yellow; text-shadow: 0 0 10px yellow; opacity: 0; }
-        
+
         @keyframes fly-left-top-to-right-bottom { 0% { top: 20%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(30deg); } 80% { top: 80%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(30deg); } 100% { top: 80%; left: 80%; opacity: 0; transform: translate(-50%, -50%) rotate(30deg); } }
         @keyframes fly-left-bottom-to-right-top { 0% { top: 80%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(-30deg); } 80% { top: 20%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(-30deg); } 100% { top: 20%; left: 80%; opacity: 0; transform: translate(-50%, -50%) rotate(-30deg); } }
         @keyframes fly-right-top-to-left-bottom { 0% { top: 20%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(150deg); } 80% { top: 80%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(150deg); } 100% { top: 80%; left: 20%; opacity: 0; transform: translate(-50%, -50%) rotate(150deg); } }
         @keyframes fly-right-bottom-to-left-top { 0% { top: 80%; left: 80%; opacity: 1; transform: translate(-50%, -50%) rotate(-150deg); } 80% { top: 20%; left: 20%; opacity: 1; transform: translate(-50%, -50%) rotate(-150deg); } 100% { top: 20%; left: 20%; opacity: 0; transform: translate(-50%, -50%) rotate(-150deg); } }
-        
+
         .anim-lt-rb { animation: fly-left-top-to-right-bottom 1.5s infinite; }
         .anim-lb-rt { animation: fly-left-bottom-to-right-top 1.5s infinite; }
         .anim-rt-lb { animation: fly-right-top-to-left-bottom 1.5s infinite; }
@@ -104,10 +104,73 @@
             grid-template-columns: 1fr 1fr; gap: 12px;
         }
         .menu-panel button { padding: 22px 0; font-size: 1.2rem; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; color: #fff; }
+        /* [추가] 현재 상황 입력 버튼: 가장 자주 찾을 수 있게 맨 위에 두 칸 폭으로 */
+        .btn-edit { grid-column: span 2; background-color: #42a5f5; color: #000 !important; }
         .btn-change { background-color: #ffa726; color: #000 !important; }
         .btn-fullscreen-menu { background-color: #4CAF50; }
         .btn-undo { background-color: #ff5252; }
         .btn-reset { background-color: #9e9e9e; color: #000 !important; }
+
+        /*
+         * 6. [추가] 현재 상황 입력 화면
+         * 점수 + 서브권 + 4명의 실제 위치를 한 번에 맞추는 화면.
+         * 점수만 바꾸면 서버 계산이 꼬이므로(첫 서버 버그와 같은 원리),
+         * "서버 위치가 점수 홀짝과 맞는지"를 검사해서 맞을 때만 적용 버튼이 켜진다.
+         * 워치처럼 작은 화면에서도 보이도록 크기는 대부분 vmin 단위로 잡았다.
+         */
+        .edit-overlay {
+            display: none; position: fixed; inset: 0; z-index: 110;
+            background: rgba(0,0,0,0.94); align-items: center; justify-content: center;
+            padding: 3vmin; overflow-y: auto;
+        }
+        .edit-overlay.open { display: flex; }
+        .edit-panel { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 2.5vmin; margin: auto; }
+        .edit-title { text-align: center; font-size: 4.5vmin; font-weight: bold; }
+        .edit-scores { display: flex; gap: 3vmin; }
+        .edit-score-box { flex: 1; display: flex; align-items: center; justify-content: space-between; background: #111; border-radius: 2vmin; padding: 1.5vmin; }
+        .edit-score-box button { width: 11vmin; height: 11vmin; font-size: 6vmin; font-weight: bold; border: none; border-radius: 2vmin; background: #333; color: #fff; cursor: pointer; }
+        .edit-score-box button:active { background: #555; }
+        .edit-score-box span { font-size: 9vmin; font-weight: 900; min-width: 12vmin; text-align: center; }
+        .edit-score-box.left span { color: #00ff00; }
+        .edit-score-box.right span { color: #ffff00; }
+        .edit-court { display: flex; border: 3px solid #fff; background: #2e7d32; height: 42vmin; }
+        .edit-half { flex: 1; display: flex; flex-direction: column; align-items: stretch; padding: 1vmin; gap: 1vmin; }
+        .edit-net { width: 1vmin; background: #fff; }
+        .edit-name {
+            flex: 1; display: flex; align-items: center; justify-content: center; text-align: center;
+            font-size: 4vmin; font-weight: bold; border-radius: 2vmin; cursor: pointer;
+            background: rgba(0,0,0,0.35); border: 3px solid transparent; padding: 0 1vmin; word-break: keep-all;
+        }
+        .edit-name.is-server { background: rgba(255,202,40,0.95); color: #000; border-color: #fff; }
+        .edit-swap { flex-shrink: 0; align-self: center; font-size: 4.5vmin; padding: 0.5vmin 4vmin; border-radius: 3vmin; border: 2px solid #fff; background: rgba(0,0,0,0.5); color: #fff; cursor: pointer; }
+        .edit-hint { font-size: 3.4vmin; line-height: 1.4; text-align: center; min-height: 10vmin; }
+        .edit-hint.ok { color: #a5d6a7; }
+        .edit-hint.bad { color: #ff8a80; }
+        .edit-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 3vmin; }
+        .edit-actions button { padding: 3.5vmin 0; font-size: 4.5vmin; font-weight: bold; border: none; border-radius: 2vmin; cursor: pointer; }
+        .btn-edit-cancel { background: #9e9e9e; color: #000; }
+        .btn-edit-apply { background: #ffca28; color: #000; }
+        .btn-edit-apply:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /*
+         * 7. [추가] 이어하기 화면
+         * 저장된 경기가 있으면 페이지를 열자마자 이 화면이 뜬다.
+         * 바로 전광판으로 넘어가지 않고 한 번 누르게 하는 이유:
+         * 전체화면, 음성(TTS), 오디오는 브라우저가 "사용자가 직접 누른 순간"에만
+         * 허용하기 때문이다. 이 버튼을 누르는 게 바로 그 "누른 순간"이 된다.
+         */
+        .resume-overlay {
+            display: none; position: fixed; inset: 0; z-index: 200;
+            background: #000; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4vmin; padding: 5vmin; text-align: center;
+        }
+        .resume-overlay.open { display: flex; }
+        .resume-title { font-size: 5vmin; font-weight: bold; }
+        .resume-info { font-size: 4vmin; line-height: 1.5; color: #ccc; }
+        .resume-info b { font-size: 8vmin; color: #fff; }
+        .resume-overlay button { width: 100%; max-width: 420px; padding: 4vmin 0; font-size: 5vmin; font-weight: bold; border: none; border-radius: 2.5vmin; cursor: pointer; }
+        .btn-resume { background: #ffca28; color: #000; }
+        .btn-new-game { background: #424242; color: #fff; }
     </style>
 </head>
 <body>
@@ -181,46 +244,136 @@
         <!-- 메뉴 오버레이: 평소엔 숨겨져 있다가, 점수 영역을 꾹 누르거나 위 아이콘을 누르면 뜸 -->
         <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()">
             <div class="menu-panel" onclick="event.stopPropagation()">
+                <button class="btn-edit" onclick="openEdit()">✎ 현재 상황 입력</button>
                 <button class="btn-change" onclick="swapCourt(); closeMenu();">코트 변경</button>
                 <button class="btn-fullscreen-menu" onclick="enterFullScreen(); closeMenu();">⛶ 전체화면 복구</button>
                 <button class="btn-undo" onclick="undoScore(); closeMenu();">실행 취소</button>
                 <button class="btn-reset" onclick="resetGame()">전체 초기화</button>
             </div>
         </div>
+
+        <!-- [추가] 현재 상황 입력 화면 -->
+        <div class="edit-overlay" id="editOverlay">
+            <div class="edit-panel">
+                <div class="edit-title">현재 상황 입력</div>
+
+                <div class="edit-scores">
+                    <div class="edit-score-box left">
+                        <button onclick="editAdjustScore('left', -1)">−</button>
+                        <span id="editScoreLeft">0</span>
+                        <button onclick="editAdjustScore('left', 1)">+</button>
+                    </div>
+                    <div class="edit-score-box right">
+                        <button onclick="editAdjustScore('right', -1)">−</button>
+                        <span id="editScoreRight">0</span>
+                        <button onclick="editAdjustScore('right', 1)">+</button>
+                    </div>
+                </div>
+
+                <!--
+                    이름을 탭하면 그 사람이 서버, ⇅를 누르면 같은 팀 두 사람 자리 교체.
+                    화면 위치 ↔ 데이터 매핑은 updateUI()와 똑같이 맞춰뒀다:
+                    왼팀  상단 = leftTeam.left,   하단 = leftTeam.right
+                    오른팀 상단 = rightTeam.right, 하단 = rightTeam.left
+                -->
+                <div class="edit-court">
+                    <div class="edit-half">
+                        <div class="edit-name" id="edit-left-top" onclick="editSetServer('left', 'left')"></div>
+                        <button class="edit-swap" onclick="editSwap('left')">⇅</button>
+                        <div class="edit-name" id="edit-left-bottom" onclick="editSetServer('left', 'right')"></div>
+                    </div>
+                    <div class="edit-net"></div>
+                    <div class="edit-half">
+                        <div class="edit-name" id="edit-right-top" onclick="editSetServer('right', 'right')"></div>
+                        <button class="edit-swap" onclick="editSwap('right')">⇅</button>
+                        <div class="edit-name" id="edit-right-bottom" onclick="editSetServer('right', 'left')"></div>
+                    </div>
+                </div>
+
+                <div class="edit-hint" id="editHint"></div>
+
+                <div class="edit-actions">
+                    <button class="btn-edit-cancel" onclick="closeEdit()">취소</button>
+                    <button class="btn-edit-apply" id="editApplyBtn" onclick="applyEdit()">적용</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- [추가] 이어하기 화면: 저장된 경기가 있을 때만 뜸 -->
+    <div class="resume-overlay" id="resumeOverlay">
+        <div class="resume-title">진행 중이던 경기가 있습니다</div>
+        <div class="resume-info" id="resumeInfo"></div>
+        <button class="btn-resume" onclick="resumeGame()">이어하기</button>
+        <button class="btn-new-game" onclick="startNewFromResume()">새 경기</button>
     </div>
 
     <script>
         let state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
         let historyStack = []; let isSystemStarted = false; let audioCtx; let voices = []; let wakeLock = null;
+        let silentOscStarted = false; // 무음 오실레이터를 한 번만 켜기 위한 표시 (게임을 여러 번 시작해도 중복 생성 안 되게)
 
         window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); };
 
         function enterFullScreen() {
             let elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); } 
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(e=>console.log(e)); } 
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(e=>console.log(e)); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(e=>console.log(e)); }
         }
 
-        async function initGame() {
-            document.activeElement.blur();
-            enterFullScreen(); 
+        // ====================================================================
+        // [추가] 새로고침 대비 저장 (localStorage)
+        // ----------------------------------------------------------------------
+        // localStorage는 브라우저가 이 사이트용으로 기기에 보관해 주는 작은 저장소다.
+        // 새로고침하거나 탭을 닫았다 열어도 남아 있다. 문자열만 저장할 수 있어서
+        // JSON.stringify로 객체 → 문자열, JSON.parse로 문자열 → 객체로 바꿔서 쓴다.
+        //
+        // 저장 시점: updateUI() 끝에서 저장한다. 득점/실행 취소/코트 변경/상황 입력이
+        // 전부 마지막에 updateUI()를 부르기 때문에, 한 곳에만 넣어도 모든 변경이 저장된다.
+        //
+        // historyStack(실행 취소 기록)도 같이 저장하므로 새로고침 후에도 실행 취소가 된다.
+        // ====================================================================
+        const STORAGE_KEY = 'badmintonScoreboard.v1'; // 저장소에서 쓸 이름표. 구조가 바뀌면 v2로 올리면 옛 데이터와 안 섞인다
+        const MAX_HISTORY = 300;                      // 실행 취소 기록 최대 개수 (저장 용량이 무한정 커지지 않게)
+        let savedGame = null;                         // 페이지를 열 때 찾은 저장 데이터 (이어하기용)
 
-            state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 1";
-            state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 2";
-            state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 1";
-            state.rightTeam.left = document.getElementById('rightLeftPlayer').value || "오른쪽 2";
+        function saveToStorage() {
+            if (!isSystemStarted) return; // 경기 중일 때만 저장
+            try {
+                // 기록이 너무 많으면 가장 오래된 것부터 잘라낸다
+                if (historyStack.length > MAX_HISTORY) historyStack.splice(0, historyStack.length - MAX_HISTORY);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: state, historyStack: historyStack, savedAt: Date.now() }));
+            } catch (e) {
+                // 사생활 보호 모드나 저장공간 부족이면 여기서 실패한다. 경기 진행 자체는 막지 않는다.
+                console.log('저장 실패', e);
+            }
+        }
 
-            const firstServe = document.querySelector('input[name="firstServe"]:checked').value;
-            const [team, position] = firstServe.split('-');
-            
-            state.servingTeam = team; state.currentServerSide = position; state.currentServerName = state[team + "Team"][position];
-            
-            document.getElementById('setupScreen').style.display = 'none';
-            document.getElementById('mainBoard').style.display = 'flex';
-            
-            isSystemStarted = true;
-            updateUI();
+        function clearStorage() {
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e) { console.log(e); }
+        }
 
+        function loadFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return null;
+                const data = JSON.parse(raw);
+                // 저장된 내용이 깨져 있으면(형식이 이상하면) 무시한다
+                const s = data && data.state;
+                if (!s || typeof s.scoreLeft !== 'number' || typeof s.scoreRight !== 'number' || !s.leftTeam || !s.rightTeam || !s.servingTeam) return null;
+                if (!Array.isArray(data.historyStack)) data.historyStack = [];
+                return data;
+            } catch (e) {
+                console.log('불러오기 실패', e);
+                return null;
+            }
+        }
+
+        // ====================================================================
+        // 화면 켜짐 유지 + 오디오 준비 + 시작 음성
+        // [변경] initGame과 이어하기 양쪽에서 같은 준비가 필요해서 함수로 분리했다.
+        // ====================================================================
+        async function startDeviceFeatures(announceText) {
             try {
                 // [변경] 예전엔 여기서 무음 <audio loop> 태그를 재생시켜 "미디어 세션"을
                 // 계속 활성 상태로 유지했다. 그런데 Wear OS는 미디어가 재생 중이면
@@ -234,18 +387,84 @@
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!audioCtx) audioCtx = new AudioContext();
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
-                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-                gain.gain.value = 0.0001; osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
+                if (!silentOscStarted) {
+                    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                    gain.gain.value = 0.0001; osc.connect(gain); gain.connect(audioCtx.destination); osc.start();
+                    silentOscStarted = true;
+                }
                 if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen');
-                speakTTS("시작");
             } catch (err) { console.log(err); }
+            speakTTS(announceText);
+        }
+
+        function showBoard() {
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('mainBoard').style.display = 'flex';
+        }
+
+        async function initGame() {
+            document.activeElement.blur();
+            enterFullScreen();
+
+            state.leftTeam.left = document.getElementById('leftLeftPlayer').value || "왼쪽 1";
+            state.leftTeam.right = document.getElementById('leftRightPlayer').value || "왼쪽 2";
+            state.rightTeam.right = document.getElementById('rightRightPlayer').value || "오른쪽 1";
+            state.rightTeam.left = document.getElementById('rightLeftPlayer').value || "오른쪽 2";
+
+            const firstServe = document.querySelector('input[name="firstServe"]:checked').value;
+            const [team, position] = firstServe.split('-');
+            const teamData = state[team + "Team"]; // 서브할 팀의 선수 정보 (객체라서 여기서 고치면 state에도 반영됨)
+
+            // [수정] 0점은 짝수 → 첫 서버는 반드시 '오른쪽 서비스 코트'에 서야 한다.
+            // 왼쪽 칸(왼팀 상단 / 오른팀 하단) 선수를 서버로 골랐다면, 그 팀 두 선수의
+            // 자리를 바꿔서 고른 사람이 오른쪽 칸에 오게 맞춘다.
+            // (이걸 안 하면 첫 연속 득점 때 서버가 파트너로 넘어가는 버그가 생긴다.)
+            if (position === 'left') {
+                const temp = teamData.right;
+                teamData.right = teamData.left;
+                teamData.left = temp;
+            }
+
+            state.servingTeam = team;
+            state.currentServerSide = 'right';        // 0점이므로 항상 오른쪽
+            state.currentServerName = teamData.right; // 방금 오른쪽으로 옮긴(또는 원래 있던) 서버
+
+            showBoard();
+            isSystemStarted = true;
+            updateUI(); // 여기서 첫 저장도 같이 일어난다
+
+            startDeviceFeatures("시작");
+        }
+
+        // [추가] 이어하기: 저장해 둔 state와 historyStack을 그대로 되살린다
+        function resumeGame() {
+            if (!savedGame) return;
+            state = savedGame.state;
+            historyStack = savedGame.historyStack;
+            savedGame = null;
+
+            document.getElementById('resumeOverlay').classList.remove('open');
+            enterFullScreen(); // 이 버튼 클릭이 "사용자 조작"이라서 전체화면 요청이 허용된다
+            showBoard();
+            isSystemStarted = true;
+            updateUI();
+
+            startDeviceFeatures("이어하기");
+        }
+
+        // [추가] 이어하기 화면에서 "새 경기"를 고르면 저장본을 지우고 설정 화면으로
+        function startNewFromResume() {
+            savedGame = null;
+            clearStorage();
+            document.getElementById('resumeOverlay').classList.remove('open');
         }
 
         function resetGame() {
             if(confirm("초기화 하시겠습니까?")) {
-                if(document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
+                if(document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(e=>console.log(e));
                 state = { scoreLeft: 0, scoreRight: 0, servingTeam: '', currentServerSide: '', isContinuous: false, currentServerName: '', leftTeam: { right: '', left: '' }, rightTeam: { right: '', left: '' } };
                 historyStack = []; isSystemStarted = false;
+                clearStorage(); // [추가] 저장된 경기도 같이 지운다 (안 지우면 새로고침 시 이어하기가 또 뜸)
                 closeMenu();
                 document.getElementById('mainBoard').style.display = 'none';
                 document.getElementById('setupScreen').style.display = 'flex';
@@ -270,11 +489,11 @@
 
             if (team === 'left') {
                 state.scoreLeft++;
-                if (state.servingTeam === 'left') { state.isContinuous = true; let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp; } 
+                if (state.servingTeam === 'left') { state.isContinuous = true; let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp; }
                 else { state.isContinuous = false; state.servingTeam = 'left'; }
             } else {
                 state.scoreRight++;
-                if (state.servingTeam === 'right') { state.isContinuous = true; let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp; } 
+                if (state.servingTeam === 'right') { state.isContinuous = true; let temp = scoringTeamData.right; scoringTeamData.right = scoringTeamData.left; scoringTeamData.left = temp; }
                 else { state.isContinuous = false; state.servingTeam = 'right'; }
             }
 
@@ -287,8 +506,8 @@
         }
 
         function undoScore() {
-            if (historyStack.length > 0) { 
-                state = historyStack.pop(); updateUI(); speakTTS("취소"); 
+            if (historyStack.length > 0) {
+                state = historyStack.pop(); updateUI(); speakTTS("취소");
             }
         }
 
@@ -297,7 +516,7 @@
             document.getElementById('scoreRight').innerText = state.scoreRight;
             document.getElementById('areaLeft').classList.remove('has-serve');
             document.getElementById('areaRight').classList.remove('has-serve');
-            
+
             if (state.servingTeam === 'left') document.getElementById('areaLeft').classList.add('has-serve');
             else document.getElementById('areaRight').classList.add('has-serve');
 
@@ -307,27 +526,29 @@
             document.getElementById('name-right-bottom').innerText = state.rightTeam.left;
 
             document.querySelectorAll('.mc-name').forEach(el => el.classList.remove('is-server'));
-            
+
             const arrow = document.getElementById('shuttleArrow');
-            arrow.className = 'shuttle-arrow'; 
+            arrow.className = 'shuttle-arrow';
 
             if (state.servingTeam === 'left') {
                 if (state.currentServerSide === 'left') {
                     document.getElementById('name-left-top').classList.add('is-server');
-                    arrow.classList.add('anim-lt-rb'); 
+                    arrow.classList.add('anim-lt-rb');
                 } else {
                     document.getElementById('name-left-bottom').classList.add('is-server');
-                    arrow.classList.add('anim-lb-rt'); 
+                    arrow.classList.add('anim-lb-rt');
                 }
             } else {
                 if (state.currentServerSide === 'right') {
                     document.getElementById('name-right-top').classList.add('is-server');
-                    arrow.classList.add('anim-rt-lb'); 
+                    arrow.classList.add('anim-rt-lb');
                 } else {
                     document.getElementById('name-right-bottom').classList.add('is-server');
-                    arrow.classList.add('anim-rb-lt'); 
+                    arrow.classList.add('anim-rb-lt');
                 }
             }
+
+            saveToStorage(); // [추가] 화면이 바뀌었다 = 상태가 바뀌었다 → 저장
         }
 
         function speakStatus() {
@@ -343,7 +564,7 @@
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ko-KR'; utterance.rate = 1.15; 
+                utterance.lang = 'ko-KR'; utterance.rate = 1.15;
                 if (voices.length === 0) voices = window.speechSynthesis.getVoices();
                 const koreanVoices = voices.filter(v => v.lang === 'ko-KR' || v.lang === 'ko_KR');
                 if (koreanVoices.length > 0) utterance.voice = koreanVoices[0];
@@ -360,6 +581,129 @@
         }
         function closeMenu() {
             document.getElementById('menuOverlay').classList.remove('open');
+        }
+
+        // [추가] 메뉴/상황 입력/이어하기 중 하나라도 떠 있으면 true.
+        // 베젤 득점이 이런 화면 뒤에서 몰래 들어가지 않게 막는 데 쓴다.
+        function isAnyOverlayOpen() {
+            return document.querySelector('.menu-overlay.open, .edit-overlay.open, .resume-overlay.open') !== null;
+        }
+
+        // ====================================================================
+        // [추가] 현재 상황 입력
+        // ----------------------------------------------------------------------
+        // 핵심 아이디어: 진짜 state를 바로 고치지 않고, 복사본(editDraft)을 만들어서
+        // 그걸 고친다. "적용"을 눌렀을 때만 복사본을 state로 바꿔 끼운다.
+        // 그래서 "취소"를 누르면 아무 일도 없었던 것처럼 된다.
+        //
+        // 서버는 "팀(servingTeam) + 칸(currentServerSide)"으로 표현한다.
+        // 기존 코드와 같은 방식이라, 적용 후 addScore()가 그대로 이어서 계산할 수 있다.
+        // ====================================================================
+        let editDraft = null;
+
+        function openEdit() {
+            if (!isSystemStarted) return;
+            editDraft = JSON.parse(JSON.stringify(state)); // 깊은 복사: 원본과 완전히 분리된 사본
+            closeMenu();
+            document.getElementById('editOverlay').classList.add('open');
+            renderEdit();
+        }
+
+        function closeEdit() {
+            editDraft = null;
+            document.getElementById('editOverlay').classList.remove('open');
+        }
+
+        function editAdjustScore(team, delta) {
+            const key = team === 'left' ? 'scoreLeft' : 'scoreRight';
+            editDraft[key] = Math.max(0, editDraft[key] + delta); // 0 밑으로는 안 내려가게
+            renderEdit();
+        }
+
+        // 이름을 탭하면 그 자리에 있는 사람이 서버가 된다 (서브권도 그 팀으로)
+        function editSetServer(team, side) {
+            editDraft.servingTeam = team;
+            editDraft.currentServerSide = side;
+            renderEdit();
+        }
+
+        // ⇅: 같은 팀 두 사람의 자리를 바꾼다.
+        // 서브 팀을 바꾸는 경우, 노란 표시가 "자리"가 아니라 "사람"을 따라가도록
+        // 서버 칸도 같이 뒤집는다. (종춘이 서버였으면 자리를 옮겨도 종춘이 서버)
+        function editSwap(team) {
+            const t = editDraft[team + 'Team'];
+            const temp = t.right; t.right = t.left; t.left = temp;
+            if (editDraft.servingTeam === team) {
+                editDraft.currentServerSide = editDraft.currentServerSide === 'right' ? 'left' : 'right';
+            }
+            renderEdit();
+        }
+
+        // 팀 + 칸(left/right) → 이 화면에서 위인지 아래인지 (안내 문구용)
+        // 왼팀은 오른쪽을 보고 서 있어서 자기 오른쪽 = 화면 하단,
+        // 오른팀은 왼쪽을 보고 서 있어서 자기 오른쪽 = 화면 상단.
+        function screenPos(team, side) {
+            return (team === 'left') === (side === 'right') ? '하단' : '상단';
+        }
+
+        // 규칙 검사: 서브 팀 점수가 짝수면 오른쪽 칸, 홀수면 왼쪽 칸에서 서브해야 한다.
+        // 문제가 있으면 안내 문구를, 없으면 빈 문자열을 돌려준다.
+        function getEditProblem(d) {
+            const serveScore = d.servingTeam === 'left' ? d.scoreLeft : d.scoreRight;
+            const expectedSide = serveScore % 2 === 0 ? 'right' : 'left';
+            if (d.currentServerSide === expectedSide) return '';
+            const teamName = d.servingTeam === 'left' ? '왼팀' : '오른팀';
+            const parity = serveScore % 2 === 0 ? '짝수' : '홀수';
+            return `${teamName} 점수 ${serveScore}점(${parity}) → 서버는 ${screenPos(d.servingTeam, expectedSide)}에 있어야 해요. ⇅로 자리를 바꾸거나 서버를 다시 고르세요.`;
+        }
+
+        function renderEdit() {
+            const d = editDraft;
+            document.getElementById('editScoreLeft').innerText = d.scoreLeft;
+            document.getElementById('editScoreRight').innerText = d.scoreRight;
+
+            // 화면 위치 ↔ 데이터 매핑 (updateUI와 동일)
+            const slots = [
+                { id: 'edit-left-top',     team: 'left',  side: 'left'  },
+                { id: 'edit-left-bottom',  team: 'left',  side: 'right' },
+                { id: 'edit-right-top',    team: 'right', side: 'right' },
+                { id: 'edit-right-bottom', team: 'right', side: 'left'  },
+            ];
+            slots.forEach(s => {
+                const el = document.getElementById(s.id);
+                el.innerText = d[s.team + 'Team'][s.side];
+                el.classList.toggle('is-server', d.servingTeam === s.team && d.currentServerSide === s.side);
+            });
+
+            const problem = getEditProblem(d);
+            const hint = document.getElementById('editHint');
+            const applyBtn = document.getElementById('editApplyBtn');
+            if (problem) {
+                hint.className = 'edit-hint bad';
+                hint.innerText = problem;
+                applyBtn.disabled = true;
+            } else {
+                const serverName = d[d.servingTeam + 'Team'][d.currentServerSide];
+                const serveScore = d.servingTeam === 'left' ? d.scoreLeft : d.scoreRight;
+                const receiveScore = d.servingTeam === 'left' ? d.scoreRight : d.scoreLeft;
+                hint.className = 'edit-hint ok';
+                hint.innerText = `✓ ${serverName} 서브, ${serveScore} 대 ${receiveScore}`;
+                applyBtn.disabled = false;
+            }
+        }
+
+        function applyEdit() {
+            if (!editDraft || getEditProblem(editDraft)) return; // 규칙에 안 맞으면 적용 안 함 (이중 안전장치)
+
+            historyStack.push(JSON.parse(JSON.stringify(state))); // 적용 전 상태를 기록 → 실행 취소로 되돌릴 수 있음
+
+            editDraft.isContinuous = false; // 직전 랠리 정보가 없으니 "연속" 표시는 끈다
+            editDraft.currentServerName = editDraft[editDraft.servingTeam + 'Team'][editDraft.currentServerSide];
+
+            state = editDraft;
+            closeEdit();
+            updateUI();     // 화면 갱신 + 저장
+            speakStatus();  // "종춘 서브, 7 대 5" 처럼 바뀐 상황을 읽어줌
         }
 
         // ====================================================================
@@ -432,21 +776,23 @@
         // preventDefault + passive:false 조합을 유지해서, 혹시라도 브라우저가
         // 기본 스크롤 동작을 시도하려는 낌새가 있으면 그것까지 막아준다.
         // ====================================================================
-        let bezelCooldown = false; 
+        let bezelCooldown = false;
         window.addEventListener('wheel', (e) => {
             if (!isSystemStarted || bezelCooldown) return;
-            if (document.getElementById('menuOverlay').classList.contains('open')) return; // 메뉴 열려있으면 무시
+            // [변경] 메뉴뿐 아니라 상황 입력/이어하기 화면이 떠 있을 때도 득점 무시.
+            // (상황 입력 화면이 작은 화면에서 넘칠 때는 베젤로 그 화면을 스크롤할 수 있다)
+            if (isAnyOverlayOpen()) return;
 
             e.preventDefault();
 
             if (e.deltaY > 10) {
                 addScore('right');
-                if (navigator.vibrate) navigator.vibrate(50); 
+                if (navigator.vibrate) navigator.vibrate(50);
                 lockBezel();
-            } 
+            }
             else if (e.deltaY < -10) {
                 addScore('left');
-                if (navigator.vibrate) navigator.vibrate(50); 
+                if (navigator.vibrate) navigator.vibrate(50);
                 lockBezel();
             }
         }, { passive: false });
@@ -460,10 +806,30 @@
             if (document.visibilityState === "visible") {
                 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                 if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-                try { if (isSystemStarted && navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } 
+                try { if (isSystemStarted && navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); }
                 catch (err) { console.log(err); }
             }
         });
+
+        // ====================================================================
+        // [추가] 페이지를 열 때: 저장된 경기가 있으면 이어하기 화면을 띄운다
+        // ====================================================================
+        savedGame = loadFromStorage();
+        if (savedGame) {
+            const s = savedGame.state;
+            const minutesAgo = Math.max(0, Math.round((Date.now() - (savedGame.savedAt || Date.now())) / 60000));
+            document.getElementById('resumeInfo').innerHTML =
+                `${escapeHtml(s.leftTeam.left)} · ${escapeHtml(s.leftTeam.right)}<br>` +
+                `<b>${s.scoreLeft} : ${s.scoreRight}</b><br>` +
+                `${escapeHtml(s.rightTeam.right)} · ${escapeHtml(s.rightTeam.left)}<br>` +
+                `<span style="font-size:3.2vmin">${minutesAgo}분 전 저장</span>`;
+            document.getElementById('resumeOverlay').classList.add('open');
+        }
+
+        // 선수 이름에 <, & 같은 문자가 있어도 화면이 깨지지 않게 글자 그대로 표시
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
     </script>
 </body>
 </html>
